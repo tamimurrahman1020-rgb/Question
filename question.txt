@@ -1,5 +1,5 @@
 Level.1
-Question.list.25
+Question.list.2
 
 Question.1: কোরআন কোন ভাষায় অবতীর্ণ হয়েছে?
 A: আরবি
