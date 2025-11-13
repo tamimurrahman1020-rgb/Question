@@ -2,7 +2,7 @@
   {
     "level": 1,
     "name": "Basic Principles",
-    "required_questions": 5,
+    "required_questions": 5, 
     "questions": [
       {
         "q": "ইসলামে ঈমানের রোকন কয়টি?",
@@ -79,7 +79,7 @@
   {
     "level": 2,
     "name": "Advanced Knowledge",
-    "required_questions": 4,
+    "required_questions": 4, 
     "questions": [
       {
         "q": "'আল-ফারুক' কার উপাধি?",
@@ -136,7 +136,7 @@
   {
     "level": 3,
     "name": "Prophet's Life (Sira)",
-    "required_questions": 3,
+    "required_questions": 3, 
     "questions": [
       {
         "q": "মহানবী (সাঃ)-এর দাদার নাম কী ছিল?",
@@ -193,7 +193,7 @@
   {
     "level": 4,
     "name": "Detailed Fiqh & History",
-    "required_questions": 3,
+    "required_questions": 3, 
     "questions": [
       {
         "q": "ইসলামের ইতিহাসে 'হুদায়বিয়ার সন্ধি'-র গুরুত্ব কী? এই সন্ধিটি কোথায় এবং কাদের মধ্যে স্বাক্ষরিত হয়েছিল?",
