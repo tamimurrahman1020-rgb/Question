@@ -1,5 +1,5 @@
 # LEVEL: 1 - Basic Principles
-# REQUIRED_QUESTIONS: 4
+# REQUIRED_QUESTIONS: 6
 
 Q: ইসলামে ঈমানের রোকন কয়টি?
 A) ৫টি
