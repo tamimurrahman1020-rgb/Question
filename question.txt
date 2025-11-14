@@ -1,5 +1,5 @@
 # LEVEL: 1 - Basic Principles
-# REQUIRED_QUESTIONS: 5
+# REQUIRED_QUESTIONS: 4
 
 Q: ইসলামে ঈমানের রোকন কয়টি?
 A) ৫টি
@@ -42,13 +42,6 @@ B) মদীনা শরীফ
 C) হেরা গুহা
 D) সাওর গুহা
 ANSWER: C
-
-Q: আল্লাহর গুণবাচক নামসমূহের সর্বমোট সংখ্যা কতটি?
-A) ৯৯টি
-B) ১০০টি
-C) ১০১টি
-D) অনির্দিষ্ট
-ANSWER: A
 
 
 # LEVEL: 2 - Advanced Knowledge
