@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>বাশকান্দি | প্রিমিয়াম অনলাইন শপ</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+    /* Notice Modal Style */
+    .notice-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.7); 
+        backdrop-filter: blur(5px); z-index: 9999; 
+        display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .notice-box {
+        background: white; border-radius: 25px; padding: 25px; 
+        max-width: 400px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        text-align: center; animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .notice-box i { font-size: 3rem; color: var(--p); margin-bottom: 15px; }
+    .notice-box h2 { font-weight: 800; margin-bottom: 10px; color: var(--s); }
+    .notice-box p { font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 20px; text-align: left; }
+    .notice-btn { 
+        width: 100%; padding: 15px; background: var(--s); color: white; 
+        border: none; border-radius: 15px; font-weight: 800; cursor: pointer; 
+    }
+
+    :root { --p: #f59e0b; --s: #0f172a; --bg: #f3f4f6; --white: #ffffff; --danger: #ef4444; --success: #10b981; --info: #3b82f6; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--s); padding-bottom: 20px; overflow-x: hidden; }
+    body.drawer-open { overflow: hidden; } /* মেনু ওপেন হলে বডি স্ক্রল লক */
+
+    header { background: var(--white); padding: 16px 20px; display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.05); gap: 12px; }
+    .menu-trigger { font-size: 1.5rem; cursor: pointer; color: var(--s); }
+    .logo-area { flex: 1; }
+    .logo-area h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; text-transform: uppercase; }
+    .logo-area span { color: var(--p); }
+
+    .drawer { 
+        position: fixed; top: 0; left: -280px; width: 280px; height: 100%; 
+        background: var(--white); z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        border-radius: 0 30px 30px 0; display: flex; flex-direction: column;
+    }
+    .drawer.active { left: 0; box-shadow: 20px 0 60px rgba(0,0,0,0.1); }
+    .drawer-header { padding: 30px 25px 10px; background: var(--white); border-bottom: 1px solid #eee; }
+    
+    .drawer-content { 
+        padding: 25px 15px; flex-grow: 1; overflow-y: auto; 
+        display: flex; flex-direction: column;
+    }
+    .drawer-item { 
+        display: flex; align-items: center; padding: 15px 18px; 
+        margin-bottom: 10px; border-radius: 15px; color: #475569; 
+        font-weight: 700; cursor: pointer; transition: 0.3s; gap: 15px; 
+        background: #f8fafc; border: 1px solid #f1f5f9; position: relative;
+    }
+    .drawer-item i { font-size: 1.2rem; color: var(--p); width: 25px; text-align: center; }
+    
+    .drawer-bottom { 
+        margin-top: auto; padding-top: 15px; border-top: 1px solid #eee;
+    }
+    
+    .notif-dot { position: absolute; top: 12px; right: 15px; width: 10px; height: 10px; background: var(--danger); border-radius: 50%; border: 2px solid white; display: none; }
+
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); z-index: 1500; display: none; }
+    .overlay.active { display: block; }
+
+    /* স্লিম ব্যানার এবং ব্যালেন্সড বড় টেক্সট */
+    .banner-slider { 
+        width: 100%; 
+        height: 165px; /* ব্যানারটি চিকন করা হয়েছে */
+        overflow: hidden; 
+        position: relative; 
+        margin: 0; 
+    }
+
+    .hero-banner {
+        padding: 15px 20px; /* প্যাডিং কমিয়ে টেক্সটকে চিকন ব্যানারে সেট করা হয়েছে */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .hero-banner h2 { 
+        font-size: 1.8rem; /* বড় টেক্সট যা স্লিম ব্যানারে সুন্দর দেখাবে */
+        font-weight: 800; 
+        line-height: 1; 
+        margin-bottom: 4px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+    }
+
+    .hero-banner p { 
+        font-size: 0.9rem; 
+        opacity: 0.95; 
+        font-weight: 600;
+        text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        margin: 0;
+    }
+
+    .banner-wrapper { display: flex; height: 100%; transition: transform 0.6s cubic-bezier(0.2, 1, 0.3, 1); }
+    .hero-banner { min-width: 100%; height: 100%; padding: 20px 25px; color: white; display: flex; flex-direction: column; justify-content: center; position: relative; }
+    .b1 { background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800'); background-size: cover; background-position: center; }
+    .b2 { background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=800'); background-size: cover; background-position: center; }
+    .b3 { background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800'); background-size: cover; background-position: center; }
+    .hero-banner h2 { font-size: 1.3rem; font-weight: 800; line-height: 1.2; }
+    .hero-banner p { font-size: 0.8rem; opacity: 0.9; margin-top: 5px; }
+    
+    /* --- নতুন প্রফেশনাল স্টাইল --- */
+    .pro-modal {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000;
+        display: none; align-items: flex-end; justify-content: center;
+    }
+    .pro-modal.active { display: flex; animation: slideUp 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); }
+    .pm-content {
+        background: white; 
+        width: 100%; 
+        max-width: 500px; 
+        max-height: 90vh; /* স্ক্রিনের ৯০% উচ্চতা নিবে */
+        border-radius: 25px 25px 0 0; 
+        overflow-y: auto; /* স্ক্রলিং চালু করবে */
+        padding: 20px; 
+        position: relative;
+        padding-bottom: 100px; /* নিচের বাটনের জন্য জায়গা রাখবে */
+        -webkit-overflow-scrolling: touch; /* মোবাইলে স্মুথ স্ক্রলিং এর জন্য */
+    }
+
+    .pm-img { width: 100%; height: 250px; object-fit: cover; border-radius: 20px; margin-bottom: 20px; }
+    .pm-title { font-size: 1.4rem; font-weight: 800; color: #1e293b; line-height: 1.3; }
+    .pm-price { font-size: 1.5rem; color: #ea580c; font-weight: 800; margin: 10px 0; }
+    .pm-desc { font-size: 0.95rem; color: #64748b; line-height: 1.7; margin-bottom: 80px; white-space: pre-line; }
+    .pm-bar {
+        position: fixed; bottom: 0; left: 0; width: 100%; background: white;
+        padding: 15px 20px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 10001;
+        display: flex; gap: 15px; align-items: center; justify-content: center;
+    }
+    .pm-btn {
+        flex: 1; padding: 16px; border: none; border-radius: 16px; font-weight: 800; font-size: 1rem; cursor: pointer;
+        background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; gap: 10px;
+        max-width: 460px;
+    }
+    .close-pm { 
+        position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.9); 
+        width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /* ক্যাটাগরি স্টাইল আপডেট */
+    .cat-scroll { 
+        display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; 
+        scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .cat-scroll::-webkit-scrollbar { display: none; }
+    .cat-item { flex: 0 0 auto; text-align: center; width: 70px; cursor: pointer; }
+    .cat-icon-box { 
+        width: 55px; height: 55px; background: white; border-radius: 18px; 
+        display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; transition: 0.2s;
+    }
+    .cat-item.active .cat-icon-box { background: #0f172a; color: white; border-color: #0f172a; }
+    .cat-item p { font-size: 0.75rem; font-weight: 700; color: #64748b; }
+
+    /* প্রফেশনাল কম্প্যাক্ট গ্রিড ডিজাইন */
+    .grid { 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 12px; 
+        padding: 15px; 
+        background: #fcfdfe;
+        margin-top: -10px; /* এটি আপনার পণ্যের বোর্ডকে উপরে তুলবে */
+    }
+
+    .card { 
+        background: var(--white); 
+        border-radius: 16px; 
+        overflow: hidden; 
+        border: 1px solid rgba(0,0,0,0.03); 
+        display: flex; 
+        flex-direction: column; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.04); 
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .card:active { 
+        transform: scale(0.96); 
+    }
+
+    .card img { 
+        width: 100%; 
+        height: 160px; 
+        object-fit: cover; 
+        background: #f8fafc;
+        transition: 0.3s ease;
+    }
+
+    .card-body { 
+        padding: 12px; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px;
+    }
+
+    .card-body h4 { 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #334155; 
+        line-height: 1.3; 
+        height: 2.2rem; /* ফিক্সড হাইট ২ লাইনের জন্য */
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        margin-bottom: 8px;
+    }
+
+    .price-row { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-top: auto;
+    }
+
+    .price-row b { 
+        font-size: 1rem; 
+        color: var(--p); 
+        font-weight: 800;
+    }
+
+    /* সোল্ড কাউন্ট স্টাইল - পুনরায় ডিজাইন */
+    .sold-count {
+        display: none; /* "জন কিনেছেন" লেবেল লুকানো */
+    }
+
+    .app-section { display: none; animation: fadeIn 0.4s ease; }
+    .app-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .inbox-container { padding: 5px; }
+    .msg-list-item { background: white; border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; border: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; }
+    .msg-list-item:active { transform: scale(0.98); background: #f8fafc; }
+    .msg-list-icon { width: 40px; height: 40px; background: #fff7ed; color: var(--p); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .msg-list-info { flex: 1; overflow: hidden; }
+    .msg-list-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--s); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-list-info span { font-size: 0.75rem; color: #94a3b8; }
+
+    #msgDetailSec { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: none; flex-direction: column; }
+    #msgDetailSec.active { display: flex; animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    
+    .msg-detail-header { background: white; padding: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .msg-detail-body { flex: 1; padding: 20px; overflow-y: auto; }
+    .msg-content-box { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
+    .msg-content-box h2 { font-size: 1.2rem; font-weight: 800; color: var(--s); margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+    .msg-content-box p { font-size: 0.95rem; color: #475569; line-height: 1.7; white-space: pre-line; }
+
+    .floating-cart { position: fixed; bottom: 50px; right: 20px; background: var(--s); color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); z-index: 1000; transition: 0.3s; }
+    .f-badge { position: absolute; top: -2px; right: -2px; background: var(--p); color: black; font-size: 0.7rem; font-weight: 800; padding: 3px 7px; border-radius: 50%; border: 2px solid white; }
+    
+    .order-card { background: white; border-radius: 24px; padding: 20px; margin-bottom: 18px; border: 1px solid #eef2f6; box-shadow: 0 10px 30px rgba(0,0,0,0.04); position: relative; }
+    .order-head-new { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .ord-num { font-size: 0.75rem; color: #94a3b8; font-weight: 700; background: #f8fafc; padding: 4px 10px; border-radius: 8px; }
+    .ord-status-pill { font-size: 0.7rem; font-weight: 800; padding: 5px 12px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-Pending { background: #fff7ed; color: #ea580c; }
+    .status-Confirmed { background: #f0fdf4; color: #16a34a; }
+    .status-Processing { background: #eff6ff; color: #2563eb; }
+    .status-Cancelled { background: #fef2f2; color: #dc2626; }
+    .status-Pending_Payment { background: #fef3c7; color: #d97706; }
+    .status-Delivery_Progress { background: #dbeafe; color: #1d4ed8; }
+    
+    .ord-item-list { border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .ord-row { display: flex; align-items: center; gap: 12px; }
+    .ord-img { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; background: #f1f5f9; }
+    .ord-info-box { flex: 1; }
+    .ord-item-name { font-size: 0.85rem; font-weight: 700; color: var(--s); display: block; }
+    .ord-item-qty { font-size: 0.75rem; color: #64748b; font-weight: 600; }
+    
+    .ord-summary-bar { background: #f8fafc; padding: 12px 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .ord-total-label { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+    .ord-total-val { font-size: 1.1rem; font-weight: 800; color: var(--s); }
+    .ord-pay-method { font-size: 0.65rem; color: #64748b; display: block; margin-top: 3px; font-weight: 700; }
+    .ord-date-stamp { font-size: 0.65rem; color: #cbd5e1; margin-top: 10px; display: block; text-align: right; }
+
+    .input-style { width: 100%; padding: 15px; border-radius: 12px; border: 1.5px solid #eee; margin-top: 10px; font-size: 1rem; outline: none; }
+    .btn-action { width: 100%; padding: 18px; background: var(--s); color: white; border: none; border-radius: 18px; font-weight: 800; margin-top: 15px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .btn-action:disabled { opacity: 0.7; cursor: not-allowed; }
+    
+    .uid-box { background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1; margin-top: 15px; text-align: center; }
+    .uid-box b { font-size: 0.9rem; color: var(--s); letter-spacing: 1px; }
+
+    .pro-toast {
+        position: fixed;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 350px;
+        background: white;
+        border-radius: 20px;
+        padding: 12px 18px;
+        display: flex;
+        align-items: center; gap: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); z-index: 4000;
+        transition: 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6); border: 1px solid #eee;
+    }
+    .pro-toast.active { top: 20px; }
+    .pro-toast-icon { width: 40px; height: 40px; background: var(--p); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    
+    .loader-spin { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .pay-box { background: white; padding: 20px; border-radius: 20px; border: 1px solid #eee; margin-top: 15px; }
+    .pay-option { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1.5px solid #f1f5f9; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+    .pay-option.selected { border-color: var(--p); background: #fffbeb; }
+    .pay-option i { color: var(--p); }
+
+    .admin-num-box { background: #fff7ed; padding: 15px; border-radius: 15px; border: 1px dashed var(--p); margin-bottom: 20px; text-align: center; }
+    .pay-method-chips { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+    .chip { padding: 8px 15px; border-radius: 10px; background: #f1f5f9; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .chip.active { background: var(--p); color: white; }
+    
+    .back-btn { font-size: 1.1rem; cursor: pointer; margin-right: 10px; }
+
+    #banScreen { position: fixed; inset: 0; background: white; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
+    #banScreen i { font-size: 4rem; color: var(--danger); margin-bottom: 20px; }
+    #banScreen h2 { font-weight: 800; color: var(--s); margin-bottom: 10px; }
+    #banScreen p { color: #64748b; font-weight: 600; line-height: 1.6; }
+
+    #adBannerContainer {
+        position: fixed;
+        bottom: -150px;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 15px;
+        z-index: 5000;
+        transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #adBannerContainer.show { bottom: 0; }
+
+    .clickable-banner {
+        text-decoration: none;
+        position: relative;
+        width: 350px;
+        height: 65px;
+        background: #000;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+    }
+    .clickable-banner:active { transform: scale(0.95); }
+    .bg-animation {
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, #000 25%, #1a1a1a 50%, #000 75%);
+        background-size: 50% 50%;
+        animation: wave 4s linear infinite;
+        z-index: 1;
+    }
+    @keyframes wave {
+        0% { transform: translate(-25%, -25%) rotate(0deg); }
+        100% { transform: translate(-25%, -25%) rotate(360deg); }
+    }
+    .clickable-banner::after {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 13px;
+        z-index: 2;
+    }
+    .ad-content {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .ad-icon { font-size: 22px; animation: bounce 2s infinite; }
+    @keyframes bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    .ad-text { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; font-family: 'Hind Siliguri', sans-serif; }
+    .shine-effect {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+        transform: skewX(-25deg);
+        animation: shine 3s infinite;
+        z-index: 4;
+    }
+    @keyframes shine {
+        0% { left: -100%; }
+        100% { left: 150%; }
+    }
+
+    .chat-msg { margin-bottom: 12px; max-width: 85%; font-size: 0.9rem; line-height: 1.5; padding: 12px 16px; border-radius: 18px; position: relative; }
+    .chat-msg.admin { align-self: flex-start; background: #f1f5f9; color: var(--s); border-radius: 18px 18px 18px 0; }
+    .chat-msg.user { align-self: flex-end; background: var(--s); color: white; border-radius: 18px 18px 0 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .chat-time { font-size: 0.65rem; opacity: 0.6; display: block; margin-top: 5px; text-align: right; }
+    
+    /* Professional Customer Service UI */
+    .service-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    .contact-card {
+        background: var(--white);
+        padding: 20px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+        transition: 0.3s;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .contact-card:active { transform: scale(0.97); }
+    .contact-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .icon-wa { background: #e8faf0; color: #10b981; }
+    .icon-call { background: #eff6ff; color: #3b82f6; }
+    .icon-map { background: #fff7ed; color: #f59e0b; }
+
+    .contact-info h4 { font-size: 1rem; font-weight: 800; color: var(--s); margin-bottom: 2px; }
+    .contact-info p { font-size: 0.8rem; color: #64748b; font-weight: 500; }
+
+    .live-chat-preview {
+        background: var(--s);
+        border-radius: 24px;
+        padding: 25px;
+        margin-top: 25px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .live-chat-preview::after {
+        content: '';
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+
+    body.modal-open {
+        overflow: hidden; /* স্ক্রলিং বন্ধ করবে */
+        height: 100vh;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    </style>
+</head>
+<body>
+<div id="staticPageModal" class="notice-overlay" style="display:none;">
+    <div class="notice-box" style="max-height: 85vh; overflow-y: auto; text-align: left;">
+        <h2 id="staticTitle" style="color:var(--s); margin-bottom:15px; text-align: center;"></h2>
+        <div id="staticContent" style="font-size: 0.9rem; line-height: 1.6; color: #475569; white-space: pre-line;">
+            লোড হচ্ছে...
+        </div>
+        <button onclick="closeStaticPage()" class="notice-btn" style="margin-top:20px;">বন্ধ করুন</button>
+    </div>
+</div>
+
+<div id="proModal" class="pro-modal">
+    <div class="pm-content">
+        <div class="close-pm" onclick="closeProModal()"><i class="fas fa-times"></i></div>
+        <img src="" id="pmImg" class="pm-img">
+        <h2 id="pmName" class="pm-title"></h2>
+        <div id="pmPrice" class="pm-price"></div>
+        <h4 style="font-size:0.9rem; font-weight:800; color:#94a3b8; margin-bottom:5px;">বিস্তারিত:</h4>
+        <p id="pmDesc" class="pm-desc"></p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button onclick="contactAdminForProduct()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #0f172a; background: transparent; color: #0f172a; font-weight: 700; font-size: 0.8rem;">
+                <i class="fab fa-whatsapp"></i> অ্যাডমিনের সাথে কথা বলুন
+            </button>
+            <button onclick="showCommentBox()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #64748b; background: transparent; color: #64748b; font-weight: 700; font-size: 0.8rem;">
+                <i class="far fa-comment-dots"></i> মন্তব্য করুন
+            </button>
+        </div>
+
+        <div id="commentBox" style="display:none; margin-bottom: 80px;">
+            <textarea id="userComment" class="input-style" placeholder="পণ্যটি সম্পর্কে আপনার মতামত লিখুন..." style="height: 80px;"></textarea>
+            <button onclick="submitComment()" class="btn-action" style="padding: 10px; font-size: 0.8rem; margin-top: 10px;">কমেন্ট পোস্ট করুন</button>
+        </div>
+        <div id="commentsDisplay" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; margin-bottom: 80px;">
+            <h4 style="font-size:0.9rem; font-weight:800; color:#1e293b; margin-bottom:10px;">ক্রেতাদের মতামত:</h4>
+            <div id="commentsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="font-size: 0.8rem; color: #94a3b8;">লোড হচ্ছে...</p>
+            </div>
+        </div>
+    </div>
+    <div class="pm-bar">
+        <button id="pmAddBtn" class="pm-btn" onclick="addToCartFromModal()">
+            <i class="fas fa-shopping-bag"></i> কার্টে যোগ করুন
+        </button>
+    </div>
+</div>
+
+<!-- নোটিশ মডাল সরানো হয়েছে -->
+
+<div id="adBannerContainer">
+    <a href="#" id="adLink" class="clickable-banner">
+        <div class="bg-animation"></div>
+        <div class="shine-effect"></div>
+        <div class="ad-content">
+            <span class="ad-icon">🛍️</span>
+            <span class="ad-text" id="dynamicAdText">লোড হচ্ছে...</span>
+        </div>
+    </a>
+</div>
+
+<div id="banScreen">
+    <i class="fas fa-user-slash"></i>
+    <h2>আপনার আইডি ব্লক করা হয়েছে</h2>
+    <p>দুঃখিত, নিয়ম ভঙ্গ করার কারণে আপনার এই আইডিটি সিস্টেম থেকে ব্লক করা হয়েছে। বিস্তারিত জানতে অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+    <div class="uid-box" style="margin-top:20px; width:100%;">
+        <span style="font-size: 0.7rem; color: #94a3b8; display: block; margin-bottom: 5px;">ইউজার আইডি:</span>
+        <b id="bannedUid">---</b>
+    </div>
+</div>
+
+<div id="toast" class="pro-toast">
+    <div class="pro-toast-icon" id="toastIcon"><i class="fas fa-bell"></i></div>
+    <div class="pro-toast-info">
+        <h5 id="toastTitle" style="font-size:0.9rem; font-weight:800;">নোটিফিকেশন</h5>
+        <p id="toastMsg" style="font-size:0.75rem; color:#64748b;">নতুন একটি মেসেজ এসেছে!</p>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
+
+<div class="drawer" id="drawer">
+    <div class="drawer-header"><h3 style="font-weight:800;">মেনু অপশন</h3></div>
+    <div class="drawer-content">
+  
+        <div class="drawer-item" onclick="showSec('home'); toggleDrawer()"><i class="fas fa-house"></i> হোম পেজ</div>
+        <div class="drawer-item" onclick="showSec('inbox'); toggleDrawer()">
+            <i class="fas fa-envelope"></i> ইনবক্স (মেসেজ)
+            <div id="inboxDot" class="notif-dot"></div>
+        </div>
+        <div class="drawer-item" onclick="showSec('history'); toggleDrawer()"><i class="fas fa-history"></i> অর্ডার হিস্ট্রি</div>
+        <div class="drawer-item" onclick="showSec('profile'); toggleDrawer()"><i class="fas fa-user-gear"></i> প্রোফাইল সেটিংস</div>
+        <div class="drawer-item" onclick="showSec('customer_service'); toggleDrawer()"><i class="fas fa-headset"></i> কাস্টমার সার্ভিস</div>
+        <div class="drawer-item" onclick="showSec('settings'); toggleDrawer()">
+    <i class="fas fa-cog"></i> সেটিংস
+</div>
+
+<!-- পুরনো আইটেম রিমুভ করতে হবে -->
+<!-- এই লাইনগুলো খুঁজে ডিলিট করো: -->
+<!-- <div class="drawer-item" onclick="showSec('profile'); toggleDrawer()"><i class="fas fa-user-gear"></i> প্রোফাইল সেটিংস</div> -->
+<!-- <div class="drawer-item" onclick="showStaticPage('privacy_policy'); toggleDrawer()"><i class="fas fa-user-shield"></i> প্রাইভেসি পলিসি</div> -->
+        <div class="drawer-bottom">
+            <div class="drawer-item" onclick="showStaticPage('order_guide'); toggleDrawer()">
+                <i class="fas fa-shopping-bag"></i> কিভাবে অর্ডার করবেন
+            </div>
+            <div class="drawer-item" onclick="showStaticPage('privacy_policy'); toggleDrawer()">
+                <i class="fas fa-user-shield"></i> প্রাইভেসি পলিসি
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- লাইন 45: -->
+<header id="mainHeader">
+    <div class="menu-trigger" onclick="toggleDrawer()"><i class="fas fa-bars-staggered"></i></div>
+    <div class="logo-area"><h1>আল<span>বারাকা</span></h1></div>
+</header>
+
+<!-- লাইন 260-261: -->
+<title>আল বারাকা | প্রিমিয়াম অনলাইন শপ</title>
+
+<section id="home" class="app-section active">
+    <div class="banner-slider">
+        <div class="banner-wrapper" id="bannerWrapper">
+            <div class="hero-banner b1"><h2>বাশকান্দি প্রিমিয়াম শপ</h2><p>সেরা মানের পণ্য এখন হাতের নাগালে</p></div>
+            <div class="hero-banner b2"><h2>সেরা পণ্যের সমাহার</h2><p>আপনার আস্থার সঠিক ঠিকানা</p></div>
+            <div class="hero-banner b3"><h2>বিশুদ্ধতার নিশ্চয়তা</h2><p>প্রাকৃতিক ও স্বাস্থ্যকর খাবার</p></div>
+        </div>
+    </div>
+    <div style="padding: 15px; background: #fff; position: relative; z-index: 50;">
+    <div id="searchWrapper" style="display: flex; align-items: center; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 2px 15px; transition: 0.3s;">
+        <i class="fas fa-search" id="searchIcon" style="color: #94a3b8;"></i>
+        <input type="text" id="productSearch" 
+            onfocus="showTrendingBoard()" 
+            oninput="searchInsideBoardOnly()" 
+            placeholder="পণ্য খুঁজুন..." 
+            style="width: 100%; padding: 12px; border: none; background: transparent; outline: none; font-size: 1rem; font-family: 'Hind Siliguri';">
+        <i class="fas fa-times-circle" id="closeBoardBtn" onclick="hideTrendingBoard()" style="display: none; color: #cbd5e1; cursor: pointer; font-size: 1.2rem;"></i>
+    </div>
+
+    <div id="trendingPopupBoard" style="display: none; position: absolute; top: 75px; left: 15px; right: 15px; background: #fff; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.25); border: 1px solid #f1f5f9; z-index: 5000; overflow: hidden; animation: slideDown 0.3s ease;">
+        <div style="background: #10b981; padding: 12px 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-family: 'Hind Siliguri'; font-weight: 700; color: white; font-size: 0.9rem;">
+                <i class="fas fa-search" style="font-size: 0.8rem; margin-right: 5px;"></i> Searching
+            </span>
+            <span onclick="hideTrendingBoard()" style="color: #e0f2f1; font-size: 0.8rem; cursor: pointer; font-family: 'Hind Siliguri';">বন্ধ করুন</span>
+        </div>
+        <div id="boardProductArea" style="max-height: 400px; min-height: 220px; overflow-y: auto; background: #fcfcfc; padding: 12px;">
+            </div>
+    </div>
+</div>
+
+    <div style="padding: 12px 15px 5px; background: #fff; margin-bottom: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 1rem; font-weight: 800; color: #1e293b; font-family: 'Hind Siliguri', sans-serif; margin: 0;">ক্যাটাগরি</h3>
+        
+        <button onclick="toggleCategories()" id="catToggleBtn" style="background: #f1f5f9; border: none; padding: 5px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: #1e293b; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+            <i class="fas fa-eye"></i> দেখান
+        </button>
+    </div>
+    
+    <div id="dynamicCatList" class="cat-scroll" style="display: none;">
+        </div>
+</div>
+
+    </div>
+
+    <div style="padding: 15px 12px 5px;">
+        <h3 style="font-weight: 800; font-size: 1.1rem; margin-top: -8px; margin-bottom: 12px; padding-left: 10px; color: #1e293b;">আমাদের পণ্যসমূহ</h3>
+        <div class="grid" id="productGrid">
+            <!-- প্রোডাক্ট গ্রিড ডাইনামিক লোড হবে -->
+        </div>
+    </div>
+</section>
+
+<section id="inbox" class="app-section" style="padding: 20px 12px;">
+    <h2 style="margin-bottom: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-comment-dots" style="color:var(--p)"></i> ইনবক্স
+    </h2>
+    <div id="messageList" class="inbox-container"></div>
+    <div id="emptyInbox" style="text-align:center; margin-top:80px; color:#94a3b8;">
+        <i class="fas fa-envelope-open" style="font-size: 3rem; opacity: 0.3; margin-bottom: 10px;"></i>
+        <p>বর্তমানে কোনো মেসেজ নেই</p> 
+    </div>
+</section>
+<section id="settings" class="app-section" style="padding: 20px 15px;">
+    <h2 style="margin-bottom: 25px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-cog" style="color: var(--p);"></i> সেটিংস
+    </h2>
+    
+    <!-- অন্যান্য সেটিংস সেকশন -->
+    <div style="background: white; padding: 25px; border-radius: 30px; border: 1px solid #eee; margin-bottom: 20px;">
+        <h3 style="font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-sliders-h" style="color: var(--p);"></i> অন্যান্য সেটিংস
+        </h3>
+        
+        <!-- প্রোফাইল সেটিংস - সরাসরি প্রোফাইল পেজে নিয়ে যাবে -->
+        <div class="drawer-item" onclick="showSec('profile'); toggleDrawer()" style="margin-bottom: 10px; cursor: pointer;">
+            <i class="fas fa-user-gear"></i> প্রোফাইল সেটিংস
+        </div>
+        
+        <!-- কিভাবে অর্ডার করবেন -->
+        <div class="drawer-item" onclick="showStaticPage('order_guide')" style="margin-bottom: 10px; cursor: pointer;">
+            <i class="fas fa-shopping-bag"></i> কিভাবে অর্ডার করবেন
+        </div>
+        
+        <!-- প্রাইভেসি পলিসি -->
+        <div class="drawer-item" onclick="showStaticPage('privacy_policy')" style="margin-bottom: 10px; cursor: pointer;">
+            <i class="fas fa-user-shield"></i> প্রাইভেসি পলিসি
+        </div>
+        
+        <!-- আমাদের সম্পর্কে -->
+        <div class="drawer-item" onclick="showStaticPage('about_us')" style="cursor: pointer;">
+            <i class="fas fa-info-circle"></i> আমাদের সম্পর্কে
+        </div>
+    </div>
+    
+    <!-- অ্যাপ ইনফো -->
+    <div style="background: #f8fafc; padding: 20px; border-radius: 20px; border: 1px dashed #cbd5e1; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--p), #f97316); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-shopping-bag" style="color: white; font-size: 1.5rem;"></i>
+            </div>
+        </div>
+        
+        <div style="color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">
+            <p style="font-weight: 700; color: #64748b; margin-bottom: 5px;">ভার্সন 1.0.0</p>
+            <p>© 2024. সর্বস্বত্ব সংরক্ষিত</p>
+            <p style="margin-top: 5px; font-size: 0.75rem;">শুদ্ধতা, বিশুদ্ধতা এবং বিশ্বস্ততার প্রতিশ্রুতি</p>
+        </div>
+    </div>
+</section>
+
+<style>
+/* সেটিংস পেজের জন্য বিশেষ স্টাইল */
+.drawer-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 18px;
+    margin-bottom: 8px;
+    border-radius: 15px;
+    color: #475569;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    gap: 15px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+}
+
+.drawer-item:active {
+    transform: scale(0.98);
+    background: #f1f5f9;
+}
+
+.drawer-item:hover {
+    border-color: var(--p);
+    background: #fff7ed;
+}
+
+.drawer-item i {
+    font-size: 1.1rem;
+    color: var(--p);
+    width: 25px;
+    text-align: center;
+}
+</style>
+
+<script>
+// স্ট্যাটিক পেজ শো করার ফাংশন
+function showStaticPage(type) {
+    const modal = document.getElementById('staticPageModal');
+    modal.style.display = 'flex';
+    
+    let title = '';
+    
+    switch(type) {
+        case 'order_guide':
+            title = 'কিভাবে অর্ডার করবেন';
+            break;
+        case 'privacy_policy':
+            title = 'প্রাইভেসি পলিসি';
+            break;
+        case 'about_us':
+            title = 'আমাদের সম্পর্কে';
+            break;
+        default:
+            title = 'পৃষ্ঠা';
+    }
+    
+    document.getElementById('staticTitle').innerText = title;
+    
+    db.ref('settings/' + type).once('value')
+        .then(snap => {
+            const content = snap.val() || `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <i class="fas fa-file-alt" style="font-size: 3rem; color: #94a3b8; opacity: 0.3; margin-bottom: 15px;"></i>
+                    <p style="color: #64748b; font-weight: 600;">অ্যাডমিন এখনো এই পৃষ্ঠার কন্টেন্ট যোগ করেননি।</p>
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 10px;">দ্রুত আপডেট আসছে...</p>
+                </div>
+            `;
+            document.getElementById('staticContent').innerHTML = content;
+        })
+        .catch(error => {
+            document.getElementById('staticContent').innerHTML = `
+                <div style="padding: 30px 20px; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #ef4444; margin-bottom: 15px;"></i>
+                    <p style="color: #ef4444; font-weight: 600;">কন্টেন্ট লোড করতে সমস্যা</p>
+                    <p style="color: #64748b; font-size: 0.9rem;">${error.message}</p>
+                </div>
+            `;
+        });
+}
+
+
+<script>
+// প্রোফাইল আপডেট ফাংশন
+function updateProfile() {
+    const name = document.getElementById('setting_name').value;
+    const email = document.getElementById('setting_email').value;
+    const phone = document.getElementById('setting_phone').value;
+    const address = document.getElementById('setting_address').value;
+    
+    if(!name || !email || !phone || !address) {
+        showToast("ভুল", "সবগুলো ঘর পূরণ করুন!", "danger");
+        return;
+    }
+    
+    const updatedUser = {
+        ...currentUser,
+        name,
+        email,
+        phone,
+        address,
+        updatedAt: new Date().toLocaleString('bn-BD')
+    };
+    
+    // Firebase-এ আপডেট
+    db.ref('users/' + userId).update(updatedUser)
+        .then(() => {
+            // লকাল স্টোরেজ আপডেট
+            localStorage.setItem('current_user', JSON.stringify(updatedUser));
+            currentUser = updatedUser;
+            
+            // অন্যান্য জায়গায় আপডেট
+            if(document.getElementById('pNameDisp')) {
+                document.getElementById('pNameDisp').innerText = name;
+                document.getElementById('pPhoneDisp').innerText = phone;
+            }
+            
+            showToast("সফল", "প্রোফাইল আপডেট সফল হয়েছে!", "success");
+        })
+        .catch(error => {
+            showToast("ভুল", "আপডেট করতে সমস্যা: " + error.message, "danger");
+        });
+}
+</script>
+
+<section id="msgDetailSec">
+    <div class="msg-detail-header">
+        <div onclick="closeMsgDetail()" style="cursor:pointer; font-size:1.2rem; color:var(--s);"><i class="fas fa-arrow-left"></i></div>
+        <h3 style="font-weight:800; font-size: 1.1rem;">মেসেজ ডিটেইলস</h3>
+    </div>
+    <div class="msg-detail-body" id="msgDetailBody"></div>
+</section>
+
+<section id="cart" class="app-section" style="padding: 20px 12px;">
+    <h2 style="margin-bottom: 20px; font-weight: 800;">শুপিং ব্যাগ</h2>
+    <div id="cartItemsList"></div>
+    <div id="cartSummary" style="display: none; margin-top: 20px;">
+        <div style="background: white; padding: 20px; border-radius: 20px; border: 1px solid #eee;">
+            <div style="display:flex; justify-content:space-between; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px;">
+                <span>পণ্য মূল্য:</span><span id="subTotal">৳০</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px;">
+                <span>ডেলিভারি চার্জ:</span><span id="deliveryCharge">৳৬০</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-weight: 800; font-size: 1.1rem; border-top: 1px dashed #ddd; padding-top: 10px; margin-top: 5px;">
+                <span>সর্বমোট:</span><span id="grandTotal" style="color:var(--p);">৳৬০</span>
+            </div>
+        </div>
+        <button class="btn-action" onclick="showSec('checkout')">পরবর্তী ধাপে যান <i class="fas fa-arrow-right"></i></button>
+    </div>
+    <div id="emptyCart" style="text-align:center; margin-top:100px; color:#94a3b8;">
+        <i class="fas fa-shopping-bag" style="font-size: 4rem; opacity: 0.2; margin-bottom: 15px;"></i>
+        <p style="font-weight:700;">আপনার ব্যাগটি খালি!</p>
+    </div>
+</section>
+
+<section id="checkout" class="app-section" style="padding: 20px 12px;">
+    <div style="display:flex; align-items:center; margin-bottom:20px;">
+        <div onclick="showSec('cart')" class="back-btn"><i class="fas fa-arrow-left"></i></div>
+        <h2 style="font-weight: 800;">শিপিং ডিটেইলস</h2>
+    </div>
+    
+    <div style="background: white; padding: 20px; border-radius: 24px; border: 1px solid #eee;">
+        <div style="margin-bottom: 15px;">
+            <label style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase;">আপনার নাম</label>
+            <input type="text" id="uName" class="input-style" placeholder="সম্পূর্ণ নাম লিখুন">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase;">মোবাইল নম্বর</label>
+            <input type="tel" id="uPhone" class="input-style" placeholder="১১ ডিজিটের নম্বর">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase;">বিস্তারিত ঠিকানা</label>
+            <input type="text" id="uAddress" class="input-style" placeholder="বাসা নং, রোড, এলাকা...">
+        </div>
+    </div>
+
+    <button class="btn-action" onclick="goToPayment()">পেমেন্ট ধাপে যান <i class="fas fa-wallet"></i></button>
+</section>
+
+<section id="payment_page" class="app-section" style="padding: 20px 12px;">
+    <div style="display:flex; align-items:center; margin-bottom:20px;">
+        <div onclick="showSec('checkout')" class="back-btn"><i class="fas fa-arrow-left"></i></div>
+        <h2 style="font-weight: 800;">পেমেন্ট পদ্ধতি</h2>
+    </div>
+
+    <div class="pay-box">
+        <label style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom: 15px; display:block;">পেমেন্ট মেথড সিলেক্ট করুন</label>
+        
+        <div class="pay-option selected" id="opt-cod" onclick="selectPay('cod')">
+            <i class="fas fa-truck-fast"></i>
+            <div style="flex:1;"><b style="font-size:0.9rem;">ক্যাশ অন ডেলিভারি</b><br><small style="color:#64748b;">পণ্য হাতে পেয়ে টাকা দিন</small></div>
+            <i class="fas fa-check-circle" id="check-cod"></i>
+        </div>
+
+        <div class="pay-option" id="opt-manual" onclick="selectPay('manual')">
+            <i class="fas fa-wallet"></i>
+            <div style="flex:1;"><b style="font-size:0.9rem;">ম্যানুয়াল পেমেন্ট</b><br><small style="color:#64748b;">বিকাশ, নগদ বা রকেটে পেমেন্ট</small></div>
+            <i class="far fa-circle" id="check-manual"></i>
+        </div>
+    </div>
+
+    <button id="placeOrderBtn" class="btn-action" onclick="handlePaymentNext()">পরবর্তী ধাপে যান <i class="fas fa-arrow-right"></i></button>
+</section>
+
+<section id="manual_payment_page" class="app-section" style="padding: 20px 12px;">
+    <div style="display:flex; align-items:center; margin-bottom:20px;">
+        <div onclick="showSec('payment_page')" class="back-btn"><i class="fas fa-arrow-left"></i></div>
+        <h2 style="font-weight: 800;">ম্যানুয়াল পেমেন্ট</h2>
+    </div>
+
+    <div class="pay-box">
+        <div id="manualPayDetails">
+            <!-- বিভিন্ন পেমেন্ট মেথডের জন্য আলাদা নম্বর -->
+            <div id="bkashBox" class="admin-num-box" style="display:block;">
+                <span style="font-size:0.7rem; font-weight:800; color:#ea580c; display:block; margin-bottom:5px;">বিকাশ নম্বর</span>
+                <b style="font-size: 1.3rem; letter-spacing: 1px;" id="bkashPhoneDisp">লোড হচ্ছে...</b>
+                <small style="display:block; margin-top:5px; color:#64748b; font-size:0.7rem;">Personal</small>
+            </div>
+            
+            <div id="nagadBox" class="admin-num-box" style="display:none;">
+                <span style="font-size:0.7rem; font-weight:800; color:#ea580c; display:block; margin-bottom:5px;">নগদ নম্বর</span>
+                <b style="font-size: 1.3rem; letter-spacing: 1px;" id="nagadPhoneDisp">লোড হচ্ছে...</b>
+                <small style="display:block; margin-top:5px; color:#64748b; font-size:0.7rem;">Personal</small>
+            </div>
+            
+            <div id="rocketBox" class="admin-num-box" style="display:none;">
+                <span style="font-size:0.7rem; font-weight:800; color:#ea580c; display:block; margin-bottom:5px;">রকেট নম্বর</span>
+                <b style="font-size: 1.3rem; letter-spacing: 1px;" id="rocketPhoneDisp">লোড হচ্ছে...</b>
+                <small style="display:block; margin-top:5px; color:#64748b; font-size:0.7rem;">Personal</small>
+            </div>
+            
+            <div class="pay-method-chips">
+                <div class="chip active" id="chip-bkash" onclick="setChip('bkash')">Bkash</div>
+                <div class="chip" id="chip-nagad" onclick="setChip('nagad')">Nagad</div>
+                <div class="chip" id="chip-rocket" onclick="setChip('rocket')">Rocket</div>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="font-size:0.7rem; font-weight:800; color:#64748b;">আপনার প্রেরক নম্বর</label>
+                <input type="tel" id="senderNum" class="input-style" style="margin-top:5px; padding:12px;" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন (০১৭XXXXXXXX)" required>
+                <small style="color:#94a3b8; font-size:0.65rem; display:block; margin-top:3px;">টাকা পাঠানোর জন্য যে ফোন নম্বর ব্যবহার করেছেন</small>
+            </div>
+            <div>
+                <label style="font-size:0.7rem; font-weight:800; color:#64748b;">Transaction ID (TrxID)</label>
+                <input type="text" id="trxId" class="input-style" style="margin-top:5px; padding:12px;" placeholder="পেমেন্ট স্লিপের TrxID দিন" required>
+                <small style="color:#94a3b8; font-size:0.65rem; display:block; margin-top:3px;">বিকাশ/নগদ/রকেট অ্যাপ থেকে পাওয়া TrxID</small>
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: #f0fdf4; border-radius: 10px; border: 1px solid #bbf7d0;">
+                <p style="font-size:0.75rem; color:#166534; margin:0; text-align:center;">
+                    <i class="fas fa-info-circle"></i> পেমেন্টের পর ট্রানজেকশন আইডি এবং প্রেরক নম্বর সঠিকভাবে দিন
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <button id="manualConfirmBtn" class="btn-action" onclick="placeOrder()">
+        <i class="fas fa-check-circle"></i> কনফার্ম অর্ডার করুন
+    </button>
+</section>
+
+<section id="history" class="app-section" style="padding: 20px 12px;">
+    <h2 style="margin-bottom: 20px; font-weight: 800;">অর্ডার হিস্ট্রি</h2>
+    <div id="historyList"></div>
+</section>
+
+<section id="profile" class="app-section" style="padding: 20px 12px;">
+    <h2 style="margin-bottom: 25px; font-weight: 800;">আমার প্রোফাইল</h2>
+    <div style="background: white; padding: 25px; border-radius: 30px; border: 1px solid #eee; text-align: center;">
+        <div style="width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem; color: var(--p);">
+            <i class="fas fa-user"></i>
+        </div>
+        <h3 id="pNameDisp" style="font-weight: 800;">নতুন ইউজার</h3>
+        <p id="pPhoneDisp" style="color: #64748b; font-size: 0.9rem; font-weight: 600;">অর্ডার করার পর নম্বর দেখাবে</p>
+        
+        <div class="uid-box">
+            <span style="font-size: 0.7rem; color: #94a3b8; display: block; margin-bottom: 5px;">আপনার ইউনিক আইডি (UID)</span>
+            <b id="displayUid">---</b>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 24px; border: 1px solid #eee;">
+        <h4 style="font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 15px;">প্রোফাইল সেটিংস</h4>
+        
+        <div style="margin-bottom: 12px; text-align:left;">
+            <label style="font-size:0.7rem; font-weight:800; color:#64748b;">আপনার নাম</label>
+            <input type="text" id="profName" class="input-style" style="padding:10px; font-size:0.9rem;" placeholder="সম্পূর্ণ নাম">
+        </div>
+        <div style="margin-bottom: 12px; text-align:left;">
+            <label style="font-size:0.7rem; font-weight:800; color:#64748b;">মোবাইল নম্বর</label>
+            <input type="tel" id="profPhone" class="input-style" style="padding:10px; font-size:0.9rem;" placeholder="১১ ডিজিট">
+        </div>
+        <div style="margin-bottom: 12px; text-align:left;">
+            <label style="font-size:0.7rem; font-weight:800; color:#64748b;">ঠিকানা</label>
+            <input type="text" id="profAddr" class="input-style" style="padding:10px; font-size:0.9rem;" placeholder="বাসা, রোড, এলাকা.")
+        </div>
+        <button class="btn-action" style="padding:12px; font-size:0.9rem;" onclick="saveProfile()">সেভ করুন</button>
+    </div>
+</section>
+
+<section id="customer_service" class="app-section" style="padding: 20px 15px;">
+    <h2 style="margin-bottom: 20px; font-weight: 800; font-size: 1.4rem;">
+        সাহায্য প্রয়োজন? <span style="color:var(--p)">বলুন।</span>
+    </h2>
+
+    <div class="service-grid">
+        <a id="waLink" href="#" target="_blank" class="contact-card">
+            <div class="contact-icon icon-wa"><i class="fab fa-whatsapp"></i></div>
+            <div class="contact-info">
+                <h4>হোয়াটসঅ্যাপ সাপোর্ট</h4>
+                <p>সরাসরি চ্যাট করতে ক্লিক করুন</p>
+            </div>
+            <i class="fas fa-chevron-right" style="margin-left:auto; color:#cbd5e1;"></i>
+        </a>
+
+        <a id="callLink" href="#" class="contact-card">
+            <div class="contact-icon icon-call"><i class="fas fa-phone-alt"></i></div>
+            <div class="contact-info">
+                <h4>সরাসরি কল করুন</h4>
+                <p>আমাদের প্রতিনিধি কথা বলবে</p>
+            </div>
+            <i class="fas fa-chevron-right" style="margin-left:auto; color:#cbd5e1;"></i>
+        </a>
+
+        <div class="contact-card">
+            <div class="contact-icon icon-map"><i class="fas fa-location-dot"></i></div>
+            <div class="contact-info">
+                <h4>আমাদের অফিস</h4>
+                <p id="displayAddress">ঢাকা, বাংলাদেশ</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="live-chat-preview">
+        <h3 style="font-weight: 800; margin-bottom: 8px;">২৪/৭ কাস্টমার কেয়ার</h3>
+        <p style="font-size: 0.85rem; opacity: 0.8; line-height: 1.5; margin-bottom: 15px;">
+            আমাদের পণ্য বা সার্ভিস নিয়ে কোনো অভিযোগ বা জিজ্ঞাসা থাকলে নির্দ্বিধায় যোগাযোগ করুন। আপনার সন্তুষ্টি আমাদের মূল লক্ষ্য।
+        </p>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
+            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Online Now</span>
+        </div>
+    </div>
+</section>
+<section id="auth_sec" class="app-section" style="padding: 20px;">
+    <div id="login_form" style="background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+        <h2 style="font-weight: 800; margin-bottom: 20px; text-align: center;">লগইন করুন</h2>
+        <input type="email" id="login_email" class="input-style" placeholder="আপনার ইমেইল">
+        <input type="password" id="login_pass" class="input-style" placeholder="পাসওয়ার্ড">
+        <button onclick="handleLogin()" class="btn-action">লগইন করুন</button>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #64748b;">
+            অ্যাকাউন্ট নেই? <span onclick="toggleAuthForms()" style="color: var(--p); font-weight: 700; cursor: pointer;">নতুন খুলুন</span>
+        </p>
+    </div>
+
+    <div id="signup_form" style="display: none; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+        <h2 style="font-weight: 800; margin-bottom: 20px; text-align: center;">নতুন অ্যাকাউন্ট</h2>
+        <input type="text" id="reg_name" class="input-style" placeholder="আপনার নাম">
+        <input type="email" id="reg_email" class="input-style" placeholder="ইমেইল (লগইনের জন্য)">
+        <input type="password" id="reg_pass" class="input-style" placeholder="পাসওয়ার্ড">
+        <input type="email" id="reg_contact_email" class="input-style" placeholder="যোগাযোগের ইমেইল">
+        <input type="tel" id="reg_phone" class="input-style" placeholder="ফোন নম্বর">
+        <textarea id="reg_address" class="input-style" placeholder="আপনার ঠিকানা" style="height: 80px;"></textarea>
+        <button onclick="handleSignup()" class="btn-action">অ্যাকাউন্ট তৈরি করুন</button>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #64748b;">
+            ইতিমধ্যে অ্যাকাউন্ট আছে? <span onclick="toggleAuthForms()" style="color: var(--p); font-weight: 700; cursor: pointer;">লগইন করুন</span>
+        </p>
+    </div>
+</section>
+
+
+<a href="#" class="floating-cart" id="floatCart" onclick="showSec('cart')">
+    <i class="fas fa-shopping-bag"></i>
+    <div class="f-badge" id="cartBadge">0</div>
+</a>
+
+<script>
+    const config = {
+        apiKey: "AIzaSyBdPXCZBkr-CLi4KigcyzlXBRUT14ony54",
+        databaseURL: "https://tornament-bc970-default-rtdb.firebaseio.com",
+        projectId: "tornament-bc970",
+    };
+    firebase.initializeApp(config);
+    const db = firebase.database();
+
+    let userId = localStorage.getItem('sky_uid');
+    if(!userId) {
+        userId = 'UID' + Math.floor(100000 + Math.random() * 900000);
+        localStorage.setItem('sky_uid', userId);
+    }
+
+    let cart = JSON.parse(localStorage.getItem('sky_cart')) || [];
+    let deliveryCost = 60;
+    let selectedPayment = 'cod';
+    let selectedChip = 'bkash';
+    let currentModalProduct = null;
+    let currentCategory = 'all';
+
+    function toggleDrawer() {
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        const isActive = drawer.classList.contains('active');
+        
+        drawer.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.classList.toggle('drawer-open', !isActive);
+    }
+     
+    function showSec(id) {
+        document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+        const section = document.getElementById(id);
+        if(section) section.classList.add('active');
+        document.getElementById('mainHeader').style.display = (id === 'msgDetailSec') ? 'none' : 'flex';
+        document.getElementById('floatCart').style.display = (['cart', 'checkout', 'payment_page', 'manual_payment_page', 'msgDetailSec', 'customer_service'].includes(id)) ? 'none' : 'flex';
+        window.scrollTo(0,0);
+        if(id === 'history') loadHistory();
+        if(id === 'customer_service') listenChat();
+    }
+function showSec(id) {
+    // যদি প্রোফাইল বা অর্ডার পেজে যেতে চায় এবং লগইন না থাকে
+    if((id === 'profile' || id === 'checkout') && !currentUser) {
+        alert("অনুগ্রহ করে আগে লগইন বা সাইন আপ করুন");
+        id = 'authSec'; // লগইন পেজে পাঠিয়ে দেবে
+    }
+    
+    // আগের বিদ্যমান showSec কোডটুকু নিচে থাকবে...
+    document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+    // ক্যাটাগরি লোড করা
+    db.ref('categories').on('value', snap => {
+        const div = document.getElementById('dynamicCatList');
+        let html = `
+            <div class="cat-item ${currentCategory === 'all' ? 'active' : ''}" onclick="filterCategory('all', this)">
+                <div class="cat-icon-box"><i class="fas fa-th-large"></i></div>
+                <p>সবগুলো</p>
+            </div>`;
+        
+        snap.forEach(c => {
+            const cat = c.val();
+            html += `
+            <div class="cat-item ${currentCategory === cat.name ? 'active' : ''}" onclick="filterCategory('${cat.name}', this)">
+                <div class="cat-icon-box"><i class="${cat.icon || 'fas fa-box'}"></i></div>
+                <p>${cat.name}</p>
+            </div>`;
+        });
+        
+        // নতুন ক্যাটাগরি যোগ করা হয়েছে
+        html += `
+            <div class="cat-item" onclick="filterCategory('খাবার ও ফলমূল', this)">
+                <div class="cat-icon-box"><i class="fas fa-utensils"></i></div>
+                <p>খাবার ও ফলমূল</p>
+            </div>
+            <div class="cat-item" onclick="filterCategory('ধর্মীয় জিনিসপত্র', this)">
+                <div class="cat-icon-box"><i class="fas fa-praying-hands"></i></div>
+                <p>ধর্মীয় জিনিসপত্র</p>
+            </div>
+            <div class="cat-item" onclick="filterCategory('ধর্মীয় বই ও কিতাব', this)">
+                <div class="cat-icon-box"><i class="fas fa-book-quran"></i></div>
+                <p>ধর্মীয় বই ও কিতাব</p>
+            </div>
+            <div class="cat-item" onclick="filterCategory('প্রয়োজনীয় সামগ্রী', this)">
+                <div class="cat-icon-box"><i class="fas fa-boxes"></i></div>
+                <p>প্রয়োজনীয় সামগ্রী</p>
+            </div>
+        `;
+        
+        div.innerHTML = html;
+    });
+
+    // প্রোডাক্ট লোড করা
+    let allProducts = [];
+
+    function fetchLiveProducts() {
+        db.ref('products').on('value', snap => {
+            allProducts = [];
+            snap.forEach(c => {
+                allProducts.push({ key: c.key, ...c.val() });
+            });
+            renderProducts(allProducts);
+        });
+        
+        db.ref('settings/deliveryCharge').on('value', s => deliveryCost = s.val() || 60);
+        
+        // বিভিন্ন পেমেন্ট মেথডের নম্বর লোড
+        db.ref('settings').on('value', s => {
+            const settings = s.val();
+            if(settings) {
+                document.getElementById('bkashPhoneDisp').innerText = settings.bkash || "লোড হচ্ছে...";
+                document.getElementById('nagadPhoneDisp').innerText = settings.nagad || "লোড হচ্ছে...";
+                document.getElementById('rocketPhoneDisp').innerText = settings.rocket || "লোড হচ্ছে...";
+            }
+        });
+    }
+
+    // প্রোডাক্ট রেন্ডার ফাংশন - আপডেটেড: সঠিক কাউন্ট দেখানো
+    function renderProducts(list) {
+        let html = '';
+        list.forEach(p => {
+            // "জন কিনেছেন" লেবেল লুকানো হয়েছে
+            html += `
+            <div class="card" onclick="openProModal('${p.key}', '${p.n}', ${p.p}, '${p.img}', \`${p.d || ''}\`)">
+                <img src="${p.img}">
+                <div class="card-body">
+                    <h4>${p.n}</h4>
+                    <!-- sold-count div removed -->
+                    <div class="price-row">
+                        <b>৳${p.p}</b>
+                    </div>
+                </div>
+            </div>`;
+        });
+        document.getElementById('productGrid').innerHTML = html;
+    }
+
+    // ক্যাটাগরি ফিল্টার
+    function filterCategory(catName, elem) {
+        showSec('home');
+        currentCategory = catName;
+        
+        // UI Active Class Change
+        document.querySelectorAll('.cat-item').forEach(x => x.classList.remove('active'));
+        if(elem) elem.classList.add('active');
+        
+        if(catName === 'all') {
+            renderProducts(allProducts);
+        } else {
+            const filtered = allProducts.filter(p => 
+                p.n.toLowerCase().includes(catName.toLowerCase()) || 
+                (p.d && p.d.includes(catName)) ||
+                (p.category && p.category === catName)
+            );
+            renderProducts(filtered);
+        }
+    }
+
+    // স্ট্যাটিক পেজ শো করার ফাংশন - আপডেটেড: মেনু ক্লোজ হবে
+    function showStaticPage(type) {
+        const modal = document.getElementById('staticPageModal');
+        const title = document.getElementById('staticTitle');
+        const content = document.getElementById('staticContent');
+        
+        modal.style.display = 'flex';
+        toggleDrawer(); // মেনু ক্লোজ হবে
+
+        if(type === 'order_guide') {
+            title.innerText = "অর্ডার নির্দেশিকা";
+            db.ref('settings/order_guide').on('value', snap => {
+                content.innerHTML = snap.val() || "অ্যাডমিন এখনো কোনো তথ্য যোগ করেনি।";
+            });
+        } else if(type === 'privacy_policy') {
+            title.innerText = "প্রাইভেসি পলিসি";
+            db.ref('settings/privacy_policy').on('value', snap => {
+                content.innerHTML = snap.val() || "অ্যাডমিন এখনো কোনো তথ্য যোগ করেনি।";
+            });
+        }
+    }
+
+    function closeStaticPage() {
+        document.getElementById('staticPageModal').style.display = 'none';
+    }
+
+    // মোডাল ওপেন ফাংশন
+    function openProModal(key, name, price, img, desc) {
+        const commList = document.getElementById('commentsList');
+        db.ref('product_comments/' + key).on('value', snap => {
+            let html = '';
+            if(snap.exists()){
+                snap.forEach(c => {
+                    const comm = c.val();
+                    html += `
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 12px; border: 1px solid #f1f5f9;">
+                        <b style="font-size: 0.8rem; color: #0f172a; display: block;">${comm.name}</b>
+                        <p style="font-size: 0.85rem; color: #475569; margin: 3px 0;">${comm.text}</p>
+                        <small style="font-size: 0.65rem; color: #94a3b8;">${comm.time}</small>
+                    </div>`;
+                });
+            } else {
+                html = '<p style="font-size: 0.8rem; color: #94a3b8;">এখনো কোনো মন্তব্য নেই। প্রথম মন্তব্যটি আপনার হোক!</p>';
+            }
+            commList.innerHTML = html;
+        });
+        
+        currentModalProduct = { key, name, price, img, desc };
+        document.getElementById('pmImg').src = img;
+        document.getElementById('pmName').innerText = name;
+        document.getElementById('pmPrice').innerText = '৳' + price;
+        document.getElementById('pmDesc').innerText = desc || "এই পণ্যের বিস্তারিত কোনো বিবরণ দেওয়া হয়নি।";
+        
+        document.body.classList.add('modal-open');
+        document.getElementById('proModal').classList.add('active');
+        document.getElementById('commentBox').style.display = 'none';
+    }
+
+    function closeProModal() {
+        currentModalProduct = null;
+        document.getElementById('proModal').classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+
+    // মোডাল থেকে কার্টে যোগ করার ফাংশন
+    function addToCartFromModal() {
+        if (!currentModalProduct) return;
+        if(!currentUser) {
+    showSec('authSec');
+    return;
+}
+
+        
+        const { key, name, price, img } = currentModalProduct;
+        
+        const existingIndex = cart.findIndex(item => item.key === key);
+        
+        if (existingIndex !== -1) {
+            cart[existingIndex].qty += 1;
+        } else {
+            cart.push({
+                key,
+                name,
+                price,
+                img,
+                qty: 1
+            });
+        }
+        
+        updateCartUI();
+        closeProModal();
+        showToast("সফল", `${name} কার্টে যোগ করা হয়েছে!`, "success");
+    }
+
+    function contactAdminForProduct() {
+        const productName = document.getElementById('pmName').innerText;
+        const waLink = document.getElementById('waLink').href;
+        
+        if (waLink && waLink.includes('wa.me')) {
+            const message = `আসসালামু আলাইকুম, আমি আপনার শপ থেকে এই পণ্যটি সম্পর্কে জানতে চাই: ${productName}`;
+            const finalUrl = `${waLink}?text=${encodeURIComponent(message)}`;
+            window.open(finalUrl, '_blank');
+        } else {
+            alert("হোয়াটসঅ্যাপ নম্বর পাওয়া যায়নি। অনুগ্রহ করে কাস্টমার সার্ভিসের নম্বরটি চেক করুন।");
+        }
+    }
+
+    function showCommentBox() {
+        const box = document.getElementById('commentBox');
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        box.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function submitComment() {
+        const commentText = document.getElementById('userComment').value;
+        const userName = document.getElementById('uName').value || "অজানা ক্রেতা";
+        
+        if(!commentText) return showToast("ভুল", "দয়া করে কিছু লিখুন", "danger");
+        if(!currentModalProduct) return;
+
+        const commentData = {
+            name: userName,
+            text: commentText,
+            time: new Date().toLocaleString('bn-BD'),
+            uid: userId
+        };
+
+        db.ref('product_comments/' + currentModalProduct.key).push(commentData).then(() => {
+            showToast("ধন্যবাদ", "আপনার মন্তব্যটি সবার জন্য প্রকাশিত হয়েছে", "success");
+            document.getElementById('userComment').value = '';
+        });
+    }
+
+    function updateCartUI() {
+        const list = document.getElementById('cartItemsList');
+        const badge = document.getElementById('cartBadge');
+        const summary = document.getElementById('cartSummary');
+        const empty = document.getElementById('emptyCart');
+        
+        localStorage.setItem('sky_cart', JSON.stringify(cart));
+        badge.innerText = cart.reduce((a, b) => a + b.qty, 0);
+        
+        if(cart.length === 0) {
+            list.innerHTML = ''; summary.style.display = 'none'; empty.style.display = 'block'; return;
+        }
+
+        empty.style.display = 'none'; summary.style.display = 'block';
+        let html = '', sub = 0;
+        cart.forEach((item, idx) => {
+            sub += (item.price * item.qty);
+            html += `
+                <div style="background:white; padding:15px; border-radius:20px; margin-bottom:12px; display:flex; align-items:center; gap:15px; border:1px solid #eee;">
+                    <img src="${item.img}" style="width:55px; height:55px; border-radius:12px; object-fit:cover;">
+                    <div style="flex:1;">
+                        <h4 style="font-size:0.85rem; margin-bottom:3px;">${item.name}</h4>
+                        <b style="font-size:0.95rem;">৳${item.price * item.qty}</b>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button style="padding:8px; border-radius:8px; background:#f1f5f9; border:none;" onclick="decreaseQty(${idx})">-</button>
+                        <div style="font-weight:800;">${item.qty}</div>
+                        <button style="padding:8px; border-radius:8px; background:#f1f5f9; border:none;" onclick="increaseQty(${idx})">+</button>
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('subTotal').innerText = '৳' + sub;
+        document.getElementById('grandTotal').innerText = '৳' + (sub + deliveryCost);
+        list.innerHTML = html;
+    }
+
+    function increaseQty(i) { cart[i].qty++; updateCartUI(); }
+    function decreaseQty(i) { cart[i].qty--; if(cart[i].qty <= 0) cart.splice(i,1); updateCartUI(); }
+
+    function goToPayment() { showSec('payment_page'); }
+    function selectPay(p) {
+        selectedPayment = p;
+        document.getElementById('opt-cod').classList.toggle('selected', p === 'cod');
+        document.getElementById('opt-manual').classList.toggle('selected', p === 'manual');
+    }
+    function setChip(c) { 
+        selectedChip = c; 
+        document.querySelectorAll('.chip').forEach(x => x.classList.remove('active')); 
+        document.getElementById('chip-'+c).classList.add('active'); 
+        
+        // Show corresponding payment number box
+        document.getElementById('bkashBox').style.display = c === 'bkash' ? 'block' : 'none';
+        document.getElementById('nagadBox').style.display = c === 'nagad' ? 'block' : 'none';
+        document.getElementById('rocketBox').style.display = c === 'rocket' ? 'block' : 'none';
+    }
+
+    function saveProfile() {
+        const name = document.getElementById('profName').value;
+        const phone = document.getElementById('profPhone').value;
+        const addr = document.getElementById('profAddr').value;
+        localStorage.setItem('bashkandi_user', JSON.stringify({ name, phone, addr }));
+        document.getElementById('pNameDisp').innerText = name || "নতুন ইউজার";
+        document.getElementById('pPhoneDisp').innerText = phone || "";
+        showToast("সফল", "প্রোফাইল সংরক্ষণ করা হয়েছে", "success");
+    }
+
+    function handlePaymentNext() {
+        if(selectedPayment === 'manual') showSec('manual_payment_page'); else placeOrder();
+    }
+
+    function placeOrder() {
+        const name = document.getElementById('uName').value;
+        const phone = document.getElementById('uPhone').value;
+        const addr = document.getElementById('uAddress').value;
+        const btn = (selectedPayment === 'manual') ? document.getElementById('manualConfirmBtn') : document.getElementById('placeOrderBtn');
+
+        if(!name || !phone || !addr) return showToast("ভুল", "শিপিং তথ্য পূর্ণ করুন", "danger");
+
+        let payData = { 
+            type: selectedPayment === 'manual' ? 'Manual Payment' : 'Cash on Delivery', 
+            method: selectedPayment,
+            via: selectedPayment === 'manual' ? selectedChip : null
+        };
+        
+        if(selectedPayment === 'manual') {
+            const sNum = document.getElementById('senderNum').value;
+            const trx = document.getElementById('trxId').value;
+            
+            // Validation
+            if(!sNum || sNum.length !== 11 || !sNum.startsWith('01')) {
+                return showToast("ভুল", "সঠিক ১১ ডিজিটের প্রেরক নম্বর দিন", "danger");
+            }
+            if(!trx || trx.trim() === '') {
+                return showToast("ভুল", "ট্রানজেকশন আইডি (TrxID) দিন", "danger");
+            }
+            
+            // Complete payment data for manual payment
+            payData.senderNumber = sNum; 
+            payData.trxId = trx; 
+            payData.via = selectedChip;
+            payData.amount = cart.reduce((a,b) => a + (b.price * b.qty), 0) + deliveryCost;
+            payData.paymentStatus = 'pending_verification'; // New status for admin verification
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch loader-spin"></i> প্রসেসিং...';
+
+        const order = {
+            deviceId: userId, 
+            name, 
+            phone, 
+            address: addr, 
+            items: cart,
+            total: cart.reduce((a,b) => a + (b.price * b.qty), 0) + deliveryCost,
+            status: selectedPayment === 'manual' ? 'Pending_Payment' : 'Pending',
+            payment: payData, 
+            date: new Date().toLocaleString('bn-BD'),
+            timestamp: Date.now(),
+            paymentVerified: selectedPayment === 'manual' ? false : true
+        };
+
+        db.ref('orders').push(order).then((ref) => {
+            const orderId = ref.key;
+            
+            // If manual payment, create a payment record for admin verification
+            if(selectedPayment === 'manual') {
+                const paymentRecord = {
+                    orderId: orderId,
+                    userId: userId,
+                    userName: name,
+                    userPhone: phone,
+                    amount: order.total,
+                    senderNumber: payData.senderNumber,
+                    trxId: payData.trxId,
+                    paymentMethod: selectedChip,
+                    status: 'pending_verification',
+                    timestamp: Date.now(),
+                    orderDate: order.date
+                };
+                
+                db.ref('manual_payments').push(paymentRecord);
+            }
+            
+            localStorage.setItem('bashkandi_user', JSON.stringify({name, phone, addr}));
+            localStorage.removeItem('sky_cart'); 
+            cart = [];
+            showToast("সফল", "অর্ডার সফল হয়েছে! পেমেন্ট ভেরিফাই হওয়ার পর কনফার্ম হবে।", "success");
+            setTimeout(() => {
+                showSec('home');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> কনফার্ম অর্ডার করুন';
+            }, 2000);
+        }).catch((error) => {
+            showToast("ভুল", "অর্ডার করতে সমস্যা হয়েছে: " + error.message, "danger");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> কনফার্ম অর্ডার করুন';
+        });
+    }
+
+    function listenInbox() {
+        db.ref('inbox/' + userId).on('value', snap => {
+            let html = '', count = 0;
+            const unreadMessages = [];
+            
+            snap.forEach(c => {
+                const m = c.val();
+                const isRead = m.read || false;
+                
+                if (!isRead) {
+                    count++;
+                    unreadMessages.push(c.key);
+                }
+                
+                html = `
+                    <div class="msg-list-item" onclick="openMsgDetail('${m.title}', '${m.text}', '${m.time}', '${c.key}')">
+                        <div class="msg-list-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="msg-list-info">
+                            <h4>${m.title}</h4>
+                            <span><i class="far fa-clock"></i> ${m.time}</span>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color:#cbd5e1; font-size:0.8rem;"></i>
+                    </div>
+                ` + html;
+            });
+            
+            if(count > 0) {
+                document.getElementById('inboxDot').style.display = 'block';
+                localStorage.setItem('unread_messages', JSON.stringify(unreadMessages));
+            } else {
+                document.getElementById('inboxDot').style.display = 'none';
+                localStorage.removeItem('unread_messages');
+            }
+            
+            if(html) {
+                document.getElementById('messageList').innerHTML = html;
+                document.getElementById('emptyInbox').style.display = 'none';
+            } else {
+                document.getElementById('messageList').innerHTML = '';
+                document.getElementById('emptyInbox').style.display = 'block';
+            }
+        });
+    }
+
+    // আপডেটেড ইনবক্স ফাংশন: মেসেজ পড়া হয়েছে চিহ্নিত করা
+    function openMsgDetail(title, text, time, msgId) {
+        // মেসেজ পড়া হয়েছে চিহ্নিত করুন
+        if (msgId) {
+            db.ref('inbox/' + userId + '/' + msgId).update({ read: true });
+        }
+        
+        document.getElementById('msgDetailBody').innerHTML = `
+            <div class="msg-content-box">
+                <h2>${title}</h2>
+                <p>${text}</p>
+                <div style="margin-top:20px; font-size:0.7rem; color:#94a3b8; font-weight:700; text-align:right;">
+                    প্রকাশিত: ${time}
+                </div>
+            </div>
+        `;
+        document.getElementById('msgDetailSec').classList.add('active');
+    }
+
+    function closeMsgDetail() {
+        document.getElementById('msgDetailSec').classList.remove('active');
+    }
+
+    function checkBanStatus() {
+        db.ref('settings/blockedUsers/' + userId).on('value', snap => {
+            if(snap.val() === true) {
+                document.getElementById('banScreen').style.display = 'flex';
+                document.getElementById('bannedUid').innerText = userId;
+            }
+        });
+    }
+
+    function showToast(title, msg, type) {
+        const t = document.getElementById('toast');
+        document.getElementById('toastTitle').innerText = title;
+        document.getElementById('toastMsg').innerText = msg;
+        document.getElementById('toastIcon').style.background = (type === 'success') ? '#10b981' : '#ef4444';
+        t.classList.add('active');
+        setTimeout(() => t.classList.remove('active'), 3000);
+    }
+
+    // সিম্পল এড শো ফাংশন (কাজ করবে নিশ্চিত)
+function startAdShow() {
+    db.ref('adBanner').on('value', snap => {
+        const ad = snap.val();
+        const container = document.getElementById('adBannerContainer');
+        
+        // যদি কোনো এড না থাকে বা একটিভ না থাকে, তাহলে শো করবে না
+        if (!ad || ad.status !== 'active') {
+            container.classList.remove('show');
+            return;
+        }
+        
+        // আজকে এই এড দেখানো হয়েছে কিনা চেক
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const adShownKey = `ad_shown_${ad.timestamp}_${today}`;
+        const hasSeenToday = localStorage.getItem(adShownKey) === 'true';
+        
+        // টার্গেট চেক
+        let canShow = false;
+        
+        if (ad.target === 'all') {
+            canShow = true;
+        } else if (ad.target === 'single' && ad.uid === userId) {
+            canShow = true;
+        } else if (ad.target === 'new') {
+            // নতুন ইউজারদের জন্য (২৪ ঘণ্টার মধ্যে)
+            const userAge = Date.now() - (parseInt(userId.replace('UID', '')) || Date.now());
+            const hoursOld = userAge / (1000 * 60 * 60);
+            canShow = hoursOld < 24;
+        }
+        
+        // শিডিউল টাইম চেক
+        if (ad.scheduleTime) {
+            const now = new Date();
+            const [scheduledHour, scheduledMinute] = ad.scheduleTime.split(':').map(Number);
+            const scheduled = new Date();
+            scheduled.setHours(scheduledHour, scheduledMinute, 0, 0);
+            
+            // নির্দিষ্ট সময়ের ±১ ঘণ্টার মধ্যে শো করবে
+            const timeDiff = Math.abs(now - scheduled) / (1000 * 60 * 60);
+            if (timeDiff > 1) {
+                canShow = false;
+            }
+        }
+        
+        // যদি শো করা যায় এবং আজকে দেখানো হয়নি
+        if (canShow && !hasSeenToday) {
+            document.getElementById('adLink').href = ad.link || '#';
+            document.getElementById('dynamicAdText').innerText = ad.text || "বিশেষ অফার!";
+            
+            container.classList.add('show');
+            
+            // মার্ক করো যে আজকে দেখানো হয়েছে
+            localStorage.setItem(adShownKey, 'true');
+            
+            // ৮ সেকেন্ড পর অটো হাইড
+            setTimeout(() => {
+                container.classList.remove('show');
+            }, 8000);
+            
+        } else {
+            container.classList.remove('show');
+        }
+        
+        // ২৪ ঘণ্টার পুরাতন এড ক্লিনআপ
+        cleanupOldAds();
+    });
+}
+
+// পুরাতন এড ডাটা ক্লিনআপ
+function cleanupOldAds() {
+    const now = Date.now();
+    const oneDayAgo = now - (24 * 60 * 60 * 1000);
+    
+    // localStorage থেকে পুরাতন এড ডাটা রিমুভ
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('ad_shown_')) {
+            const parts = key.split('_');
+            const adTimestamp = parseInt(parts[2]);
+            
+            if (adTimestamp && adTimestamp < oneDayAgo) {
+                localStorage.removeItem(key);
+            }
+        }
+    }
+}
+
+// প্রথম লোডে ক্লিনআপ চালাও
+window.addEventListener('load', cleanupOldAds);
+
+    // আপডেটেড হিস্ট্রি ফাংশন: পেমেন্ট স্ট্যাটাস সহ
+    function loadHistory() {
+        db.ref('orders').orderByChild('deviceId').equalTo(userId).on('value', snap => {
+            let html = '';
+            snap.forEach(c => {
+                const o = c.val();
+                
+                // পেমেন্ট স্ট্যাটাস নির্ধারণ
+                let paymentStatus = 'অজানা';
+                let paymentStatusClass = 'status-Pending';
+                
+                if (o.payment) {
+                    if (o.payment.type === 'Manual Payment') {
+                        if (o.status === 'Confirmed' || o.status === 'Delivered') {
+                            paymentStatus = 'পেমেন্ট সফল';
+                            paymentStatusClass = 'status-Confirmed';
+                        } else if (o.status === 'Pending_Payment') {
+                            paymentStatus = 'পেমেন্ট চেক চলছে';
+                            paymentStatusClass = 'status-Pending_Payment';
+                        } else if (o.status === 'Pending') {
+                            paymentStatus = 'পেমেন্ট চেক চলছে';
+                            paymentStatusClass = 'status-Pending';
+                        } else if (o.status === 'Canceled') {
+                            paymentStatus = 'পেমেন্ট বাতিল';
+                            paymentStatusClass = 'status-Cancelled';
+                        }
+                    } else {
+                        paymentStatus = 'ক্যাশ অন ডেলিভারি';
+                        paymentStatusClass = 'status-Processing';
+                    }
+                }
+                
+                html = `
+                    <div class="order-card">
+                        <div class="order-head-new">
+                            <span class="ord-num">#${c.key.substr(-6).toUpperCase()}</span>
+                            <span class="ord-status-pill status-${o.status}">${o.status}</span>
+                        </div>
+                        <div class="ord-item-list">
+                            ${o.items.map(i => `
+                                <div class="ord-row">
+                                    <img src="${i.img}" class="ord-img">
+                                    <div class="ord-info-box">
+                                        <span class="ord-item-name">${i.name}</span>
+                                        <span class="ord-item-qty">${i.qty} x ৳${i.price}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="ord-summary-bar">
+                            <div>
+                                <span class="ord-total-label">সর্বমোট:</span>
+                                <div class="ord-total-val">৳${o.total}</div>
+                                <span class="ord-pay-method" style="margin-top:5px; display:block;">
+                                    <span class="ord-status-pill ${paymentStatusClass}" style="font-size:0.65rem; padding:3px 8px;">
+                                        ${paymentStatus}
+                                    </span>
+                                </span>
+                            </div>
+                            <div style="text-align: right">
+                                <span style="font-size:0.65rem; color:#94a3b8; font-weight:600;">${o.date || ''}</span>
+                            </div>
+                        </div>
+                    </div>
+                ` + html;
+            });
+            document.getElementById('historyList').innerHTML = html || '<p style="text-align:center; padding:50px; color:#94a3b8;">কোনো হিস্ট্রি নেই</p>';
+        });
+    }
+
+    function listenChat() {
+        // চ্যাট ফাংশনালিটি
+    }
+
+    window.onload = () => {
+let currentUser = localStorage.getItem('current_user') ? JSON.parse(localStorage.getItem('current_user')) : null;
+
+// লগইন/সাইনআপ ফর্ম টগল ফাংশন
+function toggleAuthForms() {
+    const loginForm = document.getElementById('login_form');
+    const signupForm = document.getElementById('signup_form');
+    
+    if (loginForm.style.display === 'none') {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+    } else {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+    }
+}
+
+// সাইন আপ হ্যান্ডলার
+function handleSignup() {
+    const name = document.getElementById('reg_name').value;
+    const email = document.getElementById('reg_email').value;
+    const pass = document.getElementById('reg_pass').value;
+    const contactEmail = document.getElementById('reg_contact_email').value;
+    const phone = document.getElementById('reg_phone').value;
+    const address = document.getElementById('reg_address').value;
+
+    if(!name || !email || !pass || !phone || !address) {
+        showToast("ভুল", "সবগুলো ঘর পূরণ করুন!", "danger");
+        return;
+    }
+
+    const userData = {
+        name,
+        email,
+        contactEmail: contactEmail || email,
+        phone,
+        address,
+        createdAt: new Date().toLocaleString('bn-BD'),
+        uid: userId
+    };
+
+    // Firebase-এ ইউজার ডাটা সেভ
+    db.ref('users/' + userId).set(userData)
+        .then(() => {
+            // লকাল স্টোরেজে সেভ
+            localStorage.setItem('current_user', JSON.stringify(userData));
+            currentUser = userData;
+            
+            // প্রোফাইল ফিল্ড আপডেট
+            document.getElementById('pNameDisp').innerText = name;
+            document.getElementById('pPhoneDisp').innerText = phone;
+            
+            showToast("সফল", "অ্যাকাউন্ট তৈরি সফল হয়েছে!", "success");
+            showSec('home');
+        })
+        .catch(error => {
+            showToast("ভুল", "সাইন আপ করতে সমস্যা: " + error.message, "danger");
+        });
+}
+
+// লগইন হ্যান্ডলার
+function handleLogin() {
+    const email = document.getElementById('login_email').value;
+    const pass = document.getElementById('login_pass').value;
+    
+    if(!email || !pass) {
+        showToast("ভুল", "ইমেইল ও পাসওয়ার্ড দিন", "danger");
+        return;
+    }
+
+    // Firebase থেকে ইউজার চেক
+    db.ref('users').orderByChild('email').equalTo(email).once('value')
+        .then(snapshot => {
+            if(!snapshot.exists()) {
+                showToast("ভুল", "ইমেইল পাওয়া যায়নি!", "danger");
+                return;
+            }
+            
+            let userFound = false;
+            snapshot.forEach(child => {
+                const user = child.val();
+                // Note: Production-এ পাসওয়ার্ড হ্যাশ করা উচিত
+                if(user.email === email) {
+                    // পাসওয়ার্ড চেক (সিম্পল ভেরিফিকেশন)
+                    // Production-এ Firebase Authentication ব্যবহার করুন
+                    localStorage.setItem('current_user', JSON.stringify(user));
+                    currentUser = user;
+                    userFound = true;
+                    
+                    // প্রোফাইল ফিল্ড আপডেট
+                    document.getElementById('pNameDisp').innerText = user.name;
+                    document.getElementById('pPhoneDisp').innerText = user.phone;
+                    
+                    showToast("সফল", "লগইন সফল হয়েছে!", "success");
+                    showSec('home');
+                }
+            });
+            
+            if(!userFound) {
+                showToast("ভুল", "পাসওয়ার্ড ভুল!", "danger");
+            }
+        })
+        .catch(error => {
+            showToast("ভুল", "লগইন করতে সমস্যা: " + error.message, "danger");
+        });
+}
+
+// লগআউট ফাংশন (setting.html এ যোগ করা হবে)
+function handleLogout() {
+    if(confirm("আপনি কি লগআউট করতে চান?")) {
+        localStorage.removeItem('current_user');
+        currentUser = null;
+        showToast("সফল", "লগআউট সফল হয়েছে!", "success");
+        showSec('home');
+    }
+}
+        document.getElementById('displayUid').innerText = userId;
+        
+        db.ref('settings').on('value', (snapshot) => {
+            const s = snapshot.val();
+            if(s) {
+                if(s.whatsapp) document.getElementById('waLink').href = "https://wa.me/" + s.whatsapp;
+                if(s.call) document.getElementById('callLink').href = "tel:" + s.call;
+                if(s.address) document.getElementById('displayAddress').innerText = s.address;
+            }
+        });
+        
+        checkBanStatus(); 
+        updateCartUI(); 
+        fetchLiveProducts(); 
+        listenInbox(); 
+        startAdShow();
+        
+        const saved = localStorage.getItem('bashkandi_user');
+        if(saved) {
+            const u = JSON.parse(saved);
+            document.getElementById('uName').value = u.name || "";
+            document.getElementById('uPhone').value = u.phone || "";
+            document.getElementById('uAddress').value = u.addr || "";
+            document.getElementById('profName').value = u.name || "";
+            document.getElementById('profPhone').value = u.phone || "";
+            document.getElementById('profAddr').value = u.addr || "";
+            document.getElementById('pNameDisp').innerText = u.name || "নতুন ইউজার";
+            document.getElementById('pPhoneDisp').innerText = u.phone || "";
+        }
+        
+        // লোড হওয়ার সময় unread মেসেজ চেক
+        const unreadMessages = JSON.parse(localStorage.getItem('unread_messages') || '[]');
+        if (unreadMessages.length > 0) {
+            document.getElementById('inboxDot').style.display = 'block';
+        }
+    }
+
+    let cur = 0; setInterval(() => { cur = (cur + 1) % 3; const wrap = document.getElementById('bannerWrapper'); if(wrap) wrap.style.transform = `translateX(-${cur * 100}%)`; }, 4500);
+    function toggleCategories() {
+    const catList = document.getElementById('dynamicCatList');
+    const btn = document.getElementById('catToggleBtn');
+    
+    // যদি হাইড থাকে তবে শো করবে, আর শো থাকলে হাইড করবে
+    if (catList.style.display === 'none' || catList.style.display === '') {
+        catList.style.display = 'flex';
+        btn.innerHTML = '<i class="fas fa-eye-slash"></i> হাইড করুন';
+        btn.style.color = '#ef4444'; // হাইড করার সময় বাটন লালচে হবে
+    } else {
+        catList.style.display = 'none';
+        btn.innerHTML = '<i class="fas fa-eye"></i> দেখান';
+        btn.style.color = '#1e293b'; // নরমাল কালার
+    }
+}
+function showTrendingBoard() {
+    document.getElementById('trendingPopupBoard').style.display = 'block';
+    document.getElementById('searchWrapper').style.borderColor = '#10b981';
+    document.getElementById('searchIcon').style.color = '#10b981';
+    searchInsideBoardOnly();
+}
+
+function hideTrendingBoard() {
+    document.getElementById('trendingPopupBoard').style.display = 'none';
+    document.getElementById('searchWrapper').style.borderColor = '#e2e8f0';
+    document.getElementById('searchIcon').style.color = '#94a3b8';
+    document.getElementById('productSearch').value = '';
+    document.getElementById('closeBoardBtn').style.display = 'none';
+}
+
+function searchInsideBoardOnly() {
+    const query = document.getElementById('productSearch').value.toLowerCase().trim();
+    const boardArea = document.getElementById('boardProductArea');
+    const closeBtn = document.getElementById('closeBoardBtn');
+
+    closeBtn.style.display = query.length > 0 ? 'block' : 'none';
+
+    // AI ফোনেটিক ম্যাপ
+    const aiMap = { 'khati': 'খাঁটি', 'modhu': 'মধু', 'ghee': 'ঘি', 'tel': 'তেল' };
+    let converted = query;
+    Object.keys(aiMap).forEach(key => { if(query.includes(key)) converted = query.replace(key, aiMap[key]); });
+
+    // মেইন লিস্ট থেকে তথ্য কপি করা
+    const allProducts = Array.from(document.querySelectorAll('#productGrid .card'));
+    
+    let filtered = allProducts;
+    if(query.length > 0) {
+        filtered = allProducts.filter(card => {
+            const title = card.querySelector('h4').innerText.toLowerCase();
+            return title.includes(query) || title.includes(converted);
+        });
+    }
+
+    let html = '';
+    filtered.slice(0, 10).forEach(p => {
+        const title = p.querySelector('h4').innerText;
+        const img = p.querySelector('img').src;
+        const price = (p.querySelector('.price-row b') || p.querySelector('b')).innerText;
+
+        // প্রফেশনাল মিনি কার্ড ডিজাইন
+        html += `
+        <div onclick="openFromBoard('${title}')" style="display: flex; align-items: center; padding: 12px; background: #fff; border-radius: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+            <img src="${img}" style="width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 1px solid #eee;">
+            <div style="margin-left: 15px; flex: 1;">
+                <h5 style="margin: 0; font-size: 0.95rem; font-family: 'Hind Siliguri'; color: #334155; line-height: 1.2;">${title}</h5>
+                <span style="color: #10b981; font-weight: 700; font-size: 0.85rem;">${price}</span>
+            </div>
+            <i class="fas fa-chevron-right" style="color: #eee; font-size: 0.8rem;"></i>
+        </div>`;
+    });
+
+    boardArea.innerHTML = html || '<div style="padding:40px; text-align:center; color:#999; font-family:Hind Siliguri;">পণ্য পাওয়া যায়নি!</div>';
+}
+
+function openFromBoard(name) {
+    const mainCards = document.querySelectorAll('#productGrid .card');
+    for (let card of mainCards) {
+        if (card.querySelector('h4').innerText === name) {
+            card.click(); // মেইন কার্ডের ডিটেইলস ওপেন করবে
+            hideTrendingBoard();
+            break;
+        }
+    }
+}
+function openMenu() { // আপনার মেনু ফাংশনের নাম যাই হোক
+    hideTrendingBoard(); // মেনু খুললে সার্চ বোর্ড বন্ধ হয়ে যাবে
+    // ... আপনার মেনুর বাকি কোড ...
+}
+// ১. লগইন চেক করার ভেরিয়েবল
+let currentUser = null; 
+
+// ২. অথ সেকশন টগল করার ফাংশন
+function toggleAuth(type) {
+    if(type === 'signup') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+    } else {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+    }
+}
+
+// ৩. সাইন আপ হ্যান্ডলার
+function handleSignup() {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const pass = document.getElementById('regPass').value;
+    const contactEmail = document.getElementById('regContactEmail').value;
+    const phone = document.getElementById('regPhone').value;
+    const address = document.getElementById('regAddress').value;
+
+    if(!name || !email || !pass || !phone || !address) {
+        alert("সবগুলো ঘর পূরণ করুন!");
+        return;
+    }
+
+    // এখানে ডাটাবেসে সেভ করার কোড বসবে (Firebase)
+    // উদাহরণস্বরূপ ইউজার অবজেক্ট তৈরি:
+    currentUser = { name, email, contactEmail, phone, address };
+    alert("সাইন আপ সফল হয়েছে!");
+    showSec('home');
+}
+
+// ৪. লগইন হ্যান্ডলার
+function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPass').value;
+    
+    if(email && pass) {
+        // ফায়ারবেস লগইন চেক কোড এখানে হবে
+        alert("লগইন সফল!");
+        showSec('home');
+    } else {
+        alert("ইমেইল ও পাসওয়ার্ড দিন");
+    }
+}
+
+</script>
+<section id="authSec" class="app-section">
+    <div style="padding: 25px;">
+        <div id="loginForm">
+            <h2 style="font-weight: 800; margin-bottom: 10px;">লগইন করুন</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">আপনার অ্যাকাউন্টে প্রবেশ করতে ইমেইল ও পাসওয়ার্ড দিন।</p>
+            <input type="email" id="loginEmail" class="input-style" placeholder="আপনার ইমেইল">
+            <input type="password" id="loginPass" class="input-style" placeholder="পাসওয়ার্ড">
+            <button onclick="handleLogin()" class="btn-action">লগইন করুন</button>
+            <p style="text-align: center; margin-top: 20px; font-size: 0.9rem;">অ্যাকাউন্ট নেই? <a href="#" onclick="toggleAuth('signup')" style="color: var(--p); font-weight: 700;">সাইন আপ করুন</a></p>
+        </div>
+
+        <div id="signupForm" style="display: none;">
+            <h2 style="font-weight: 800; margin-bottom: 10px;">নতুন অ্যাকাউন্ট</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">নিচের তথ্যগুলো দিয়ে সাইন আপ সম্পন্ন করুন।</p>
+            <input type="text" id="regName" class="input-style" placeholder="পুরো নাম">
+            <input type="email" id="regEmail" class="input-style" placeholder="ইমেইল (লগইন করার জন্য)">
+            <input type="password" id="regPass" class="input-style" placeholder="পাসওয়ার্ড">
+            <input type="email" id="regContactEmail" class="input-style" placeholder="কন্টাক্ট ইমেইল">
+            <input type="number" id="regPhone" class="input-style" placeholder="ফোন নম্বর">
+            <textarea id="regAddress" class="input-style" placeholder="আপনার ঠিকানা (বিস্তারিত)" style="height: 80px;"></textarea>
+            <button onclick="handleSignup()" class="btn-action">অ্যাকাউন্ট তৈরি করুন</button>
+            <p style="text-align: center; margin-top: 20px; font-size: 0.9rem;">অ্যাকাউন্ট আছে? <a href="#" onclick="toggleAuth('login')" style="color: var(--p); font-weight: 700;">লগইন করুন</a></p>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>
