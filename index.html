@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পুস্তক পাঠাগার - বই পড়ুন</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg: #f5f0e8;
+            --bg-dark: #1a1612;
+            --fg: #2d2419;
+            --fg-dark: #e8e0d4;
+            --muted: #8b7355;
+            --accent: #c45a2c;
+            --accent-glow: #e86a3a;
+            --card: #fffbf5;
+            --card-dark: #2a2420;
+            --border: #d4c4a8;
+            --border-dark: #3d352c;
+            --paper: #fffef9;
+            --paper-dark: #1f1b17;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif Bengali', serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+
+        body.dark {
+            --bg: #1a1612;
+            --fg: #e8e0d4;
+            --muted: #a89880;
+            --card: #2a2420;
+            --border: #3d352c;
+            --paper: #1f1b17;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(196, 90, 44, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 115, 85, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body.dark .bg-pattern {
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(196, 90, 44, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 115, 85, 0.1) 0%, transparent 50%);
+        }
+
+        .noise-overlay {
+            position: fixed;
+            inset: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Typography */
+        .font-display {
+            font-family: 'Tiro Bangla', serif;
+        }
+
+        /* Book Card */
+        .book-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -12px rgba(45, 36, 25, 0.2);
+        }
+
+        body.dark .book-card:hover {
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .book-cover {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .book-cover::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .book-card:hover .book-cover::after {
+            opacity: 1;
+        }
+
+        /* Reader */
+        .reader-container {
+            background: var(--paper);
+            border-radius: 16px;
+            box-shadow: 
+                0 4px 6px -1px rgba(45, 36, 25, 0.05),
+                0 10px 30px -5px rgba(45, 36, 25, 0.1),
+                inset 0 1px 0 rgba(255,255,255,0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        body.dark .reader-container {
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.2),
+                0 10px 30px -5px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .page-content {
+            font-size: 1.125rem;
+            line-height: 2;
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        .page-content p {
+            margin-bottom: 1.5rem;
+            text-indent: 2rem;
+        }
+
+        .page-content p:first-child::first-letter {
+            font-family: 'Tiro Bangla', serif;
+            font-size: 3.5rem;
+            float: left;
+            line-height: 1;
+            margin-right: 0.5rem;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Page flip animation */
+        .page-flip-enter {
+            animation: pageFlipIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .page-flip-exit {
+            animation: pageFlipOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes pageFlipIn {
+            0% {
+                opacity: 0;
+                transform: translateX(30px) rotateY(-5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) rotateY(0);
+            }
+        }
+
+        @keyframes pageFlipOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(196, 90, 44, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--fg);
+        }
+
+        .btn-icon:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn-icon:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-icon:disabled:hover {
+            background: var(--card);
+            color: var(--fg);
+            border-color: var(--border);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+            transition: width 0.3s ease;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            width: 56px;
+            height: 28px;
+            background: var(--border);
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: var(--card);
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        body.dark .theme-toggle {
+            background: var(--accent);
+        }
+
+        body.dark .theme-toggle::after {
+            transform: translateX(28px);
+        }
+
+        /* Entrance animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--muted);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            .page-content {
+                font-size: 1rem;
+                line-height: 1.9;
+            }
+
+            .book-cover {
+                height: 160px;
+            }
+        }
+
+        /* Chapter navigation */
+        .chapter-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .chapter-list.open {
+            max-height: 400px;
+        }
+
+        .chapter-item {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .chapter-item:hover {
+            background: rgba(196, 90, 44, 0.1);
+        }
+
+        .chapter-item.active {
+            background: rgba(196, 90, 44, 0.15);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="noise-overlay"></div>
+    
+    <div class="content-wrapper">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 backdrop-blur-md bg-[var(--bg)]/80 border-b border-[var(--border)]">
+            <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+                <button id="backBtn" class="btn-icon opacity-0 pointer-events-none" aria-label="পেছনে যান">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                
+                <h1 id="headerTitle" class="font-display text-xl md:text-2xl font-bold text-[var(--fg)]">
+                    পুস্তক পাঠাগার
+                </h1>
+                
+                <div class="flex items-center gap-3">
+                    <button class="theme-toggle" id="themeToggle" aria-label="থিম পরিবর্তন" role="switch"></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Library View -->
+        <main id="libraryView" class="max-w-6xl mx-auto px-4 py-8">
+            <section class="mb-10 fade-in-up">
+                <h2 class="font-display text-3xl md:text-4xl font-bold mb-3 text-[var(--fg)]">
+                    আপনার বই সংগ্রহ
+                </h2>
+                <p class="text-[var(--muted)] text-lg">
+                    পড়ার জন্য একটি বই নির্বাচন করুন
+                </p>
+            </section>
+
+            <div id="bookGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                <!-- Books will be rendered here -->
+            </div>
+        </main>
+
+        <!-- Reader View -->
+        <main id="readerView" class="hidden max-w-4xl mx-auto px-4 py-6">
+            <!-- Book info -->
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 id="currentBookTitle" class="font-display text-lg md:text-xl font-bold text-[var(--fg)]"></h2>
+                    <p id="currentBookAuthor" class="text-[var(--muted)] text-sm"></p>
+                </div>
+                <button id="chapterToggle" class="btn-icon" aria-label="অধ্যায় তালিকা">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Chapter list dropdown -->
+            <div id="chapterList" class="chapter-list mb-4 bg-[var(--card)] rounded-lg border border-[var(--border)]">
+                <nav class="p-2 max-h-64 overflow-y-auto" role="navigation" aria-label="অধ্যায় নেভিগেশন">
+                    <!-- Chapters will be rendered here -->
+                </nav>
+            </div>
+
+            <!-- Progress -->
+            <div class="mb-4">
+                <div class="flex justify-between text-sm text-[var(--muted)] mb-2">
+                    <span>পৃষ্ঠা <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Reader -->
+            <article class="reader-container p-6 md:p-10 mb-6" role="article" aria-label="বইয়ের পৃষ্ঠা">
+                <div id="pageContent" class="page-content">
+                    <!-- Page content will be rendered here -->
+                </div>
+            </article>
+
+            <!-- Navigation -->
+            <nav class="flex items-center justify-between gap-4" aria-label="পৃষ্ঠা নেভিগেশন">
+                <button id="prevPage" class="btn-icon" aria-label="আগের পৃষ্ঠা">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </button>
+                
+                <div class="flex-1 text-center">
+                    <span class="text-[var(--muted)]">অধ্যায় <span id="currentChapter">১</span></span>
+                </div>
+                
+                <button id="nextPage" class="btn-icon" aria-label="পরের পৃষ্ঠা">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
+            </nav>
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center py-8 text-[var(--muted)] text-sm">
+            <p>পুস্তক পাঠাগার - বাংলা বই পড়ুন</p>
+        </footer>
+    </div>
+
+    <!-- Floating particles container -->
+    <div id="particles"></div>
+
+    <script>
+        // Book data - AI readable semantic content
+        const books = [
+            {
+                id: 1,
+                title: "পথের দাবী",
+                author: "মানিক বন্দ্যোপাধ্যায়",
+                cover: "linear-gradient(135deg, #2d4a3e 0%, #1a2f28 100%)",
+                description: "গ্রামের পথ আর শহরের পথের মিলন মেলা",
+                chapters: [
+                    {
+                        title: "প্রথম অধ্যায়",
+                        pages: [
+                            "গ্রামের পথ ধরে হাঁটতে হাঁটতে নবীন ভাবলো, জীবনের অর্থ কী? সে তার গ্রামের ছোট্ট পথটি দিয়ে চলেছে। দুপাশে ধানক্ষেত, সবুজের সমারোহ। দূরে নদী বয়ে চলেছে শান্ত গতিতে।\n\nনবীনের মনে পড়লো তার ছেলেবেলার কথা। কত দিন সে এই পথ দিয়ে স্কুলে গেছে। বৃষ্টির দিনে কাদায় পা ডুবে যেত, তবু হাসিমুখে চলতো।",
+                            "আজ সে শহর থেকে ফিরেছে। দশ বছর পর তার গ্রামে এসেছে। কত পরিবর্তন হয়েছে! নতুন বাড়ি, নতুন মানুষ। কিন্তু পথটা আগের মতোই। ধুলোময়, খোলা আকাশের নিচে।\n\nনবীন থামলো। দূরে একটা ছেলে মাঠে খেলছে। তার নিজের ছেলেবেলার কথা মনে পড়লো। সেও তো এই মাঠে খেলতো। সময়ের চক্র এভাবেই ঘুরে চলে।",
+                            "সন্ধ্যা নামছে। আকাশে তারারা জেগে উঠেছে। নবীন তার বাড়ির দিকে হাঁটতে লাগলো। দীর্ঘদিন পর সে বাড়ি ফিরছে। তার মায়ের মুখ মনে পড়ছে।\n\nপথের দাবী অনেক, কিন্তু মানুষের দাবী আরও বেশি। নবীন বুঝতে পারলো, জীবনের সবচেয়ে বড় সম্পদ হলো স্মৃতি।"
+                        ]
+                    },
+                    {
+                        title: "দ্বিতীয় অধ্যায়",
+                        pages: [
+                            "সকাল হলো। পাখির ডাকে নবীনের ঘুম ভাঙলো। গ্রামের সকাল আলাদা। শহরের কোলাহল নেই, শুধু প্রকৃতির সঙ্গীত।\n\nনবীন উঠে বারান্দায় এলো। তার মা রান্নাঘরে ব্যস্ত। গ্রামের চিরাচরিত গন্ধ ভেসে আসছে। ধোঁয়ার সাথে মিশে আছে মাটির গন্ধ।",
+                            "নবীন ভাবলো, সে কি সত্যিই শহরে ফিরে যাবে? এই গ্রামে কি তার কোনো কাজ নেই? তার শিক্ষা, তার অভিজ্ঞতা - এসব কি এই মাটিতে দিতে পারে না?\n\nএকটা নতুন ভাবনা তার মনে জাগলো। সে হয়তো গ্রামের জন্য কিছু করতে পারে।",
+                            "দুপুরে নবীন গ্রামের স্কুলে গেল। সেই স্কুল যেখানে সে পড়েছিল। ভেঙে পড়া দেয়াল, জীর্ণ ছাদ। কিন্তু শিক্ষকেরা আগের মতোই নিষ্ঠার সাথে পড়াচ্ছেন।\n\nনবীন সিদ্ধান্ত নিলো। সে এই স্কুলের জন্য কিছু করবে। এই তার পথের দাবী।"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "শ্রাবণ মেঘ",
+                author: "তারাশঙ্কর বন্দ্যোপাধ্যায়",
+                cover: "linear-gradient(135deg, #4a3728 0%, #2a1f18 100%)",
+                description: "বর্ষার গল্প, মানুষের সংগ্রাম",
+                chapters: [
+                    {
+                        title: "প্রথম অধ্যায়",
+                        pages: [
+                            "বর্ষা এসেছে। আকাশ কালো মেঘে ঢাকা। গ্রামের মানুষ আকাশের দিকে তাকিয়ে আছে। এবার ফসল ভালো হবে কিনা, সেই চিন্তা।\n\nরামলাল তার জমিতে দাঁড়িয়ে আছে। বছর তিনেক ধরে খরা। এবার বৃষ্টি এসেছে। কিন্তু কি পরিমাণে? সেই দুশ্চিন্তা।",
+                            "গ্রামের পুকুর প্রায় শুকিয়ে গেছে। মানুষ পানির জন্য হাহাকার করছে। এই শ্রাবণ মাসে মেঘ জমেছে, কিন্তু বৃষ্টি হচ্ছে না।\n\nরামলালের স্ত্রী কমলা বললো, দেবতারা রাগী আছে। পূজো দিতে হবে। রামলাল বিশ্বাস করে না, কিন্তু স্ত্রীর কথায় মাথা নাড়লো।",
+                            "সন্ধ্যায় মন্দিরে পূজো হলো। পুরোহিত মন্ত্র পড়লেন। গ্রামের সবাই উপস্থিত। কিন্তু মেঘ কেটে যাচ্ছে, বৃষ্টি হচ্ছে না।\n\nরামলাল মনে মনে ভাবলো, প্রকৃতির সাথে কি আদৌ কোনো আপস সম্ভব? নাকি মানুষকে নিজের ভাগ্য নিজেই গড়তে হবে?"
+                        ]
+                    },
+                    {
+                        title: "দ্বিতীয় অধ্যায়",
+                        pages: [
+                            "রাতে প্রচণ্ড ঝড় উঠলো। বিদ্যুৎ চমকাচ্ছে, গর্জন করছে। রামলাল ঘুমাতে পারছে না। তার জমির কথা ভাবছে।\n\nহঠাৎ বৃষ্টি শুরু হলো। প্রথমে ফোঁটা ফোঁটা, তারপর টানা বৃষ্টি। পুকুর ভরে যাচ্ছে। ক্ষেতে পানি জমছে।",
+                            "ভোরে রামলাল দেখলো, তার ক্ষেত পানিতে ভরে গেছে। এতদিনের খরার পর এই বৃষ্টি। কিন্তু সে শুনলো, উজানের গ্রামে বন্যা হয়েছে।\n\nপ্রকৃতি দুই রূপ। একদিকে জীবনদায়ক, অন্যদিকে ধ্বংসলীলা। রামলাল বুঝলো, তার আনন্দ অন্যের শোকের ওপর দাঁড়িয়ে।",
+                            "রামলাল সিদ্ধান্ত নিলো। সে উজানের গ্রামে সাহায্য করতে যাবে। তার কাছে যা আছে, তার কিছু ভাগ করবে।\n\nএই শ্রাবণ মেঘ তাকে শিখিয়েছে মানুষের সাথে মানুষের বন্ধন। প্রকৃতি সবাইকে সমান চোখে দেখে।"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "চাঁদের পাহাড়",
+                author: "বিভূতিভূষণ বন্দ্যোপাধ্যায়",
+                cover: "linear-gradient(135deg, #3d4f5f 0%, #1f2a30 100%)",
+                description: "পাহাড়ি জীবনের রহস্যময় গল্প",
+                chapters: [
+                    {
+                        title: "প্রথম অধ্যায়",
+                        pages: [
+                            "পাহাড়ের গভীরে একটা ছোট্ট গ্রাম। সেখানে বাস করতো বাসুদেব। সে ছিল পাহাড়ের গাইড। পর্যটকদের নিয়ে বেড়াতো।\n\nএকদিন এক অদ্ভুত ঘটনা ঘটলো। চাঁদ পূর্ণিমার রাতে পাহাড়ের চূড়ায় অদ্ভুত আলো দেখা গেল। কেউ বিশ্বাস করলো না, কিন্তু বাসুদেব দেখেছিল।",
+                            "বাসুদেব সেই আলোর উৎস খুঁজতে রওনা হলো। পাহাড়ি পথ বন্ধুর, বিপদসঙ্কুল। কিন্তু তার কৌতূহল ছিল প্রবল।\n\nরাতভর সে হাঁটলো। জঙ্গলের মধ্যে দিয়ে, ঝর্ণার পাশ দিয়ে। ভোরবেলা সে পৌঁছালো এক গুহার কাছে।",
+                            "গুহার ভিতর থেকে আলো আসছে। বাসুদেব ভয় পেলো, কিন্তু এগিয়ে গেল। ভিতরে দেখলো, এক প্রাচীন মূর্তি। তার ওপর চাঁদের আলো পড়ছে।\n\nএটা ছিল প্রাচীন সভ্যতার ধ্বংসাবশেষ। বাসুদেব বুঝলো, এই পাহাড়ের গভীরে লুকিয়ে আছে ইতিহাস।"
+                        ]
+                    },
+                    {
+                        title: "দ্বিতীয় অধ্যায়",
+                        pages: [
+                            "বাসুদেব গ্রামে ফিরে সবাইকে জানালো। কিন্তু কেউ বিশ্বাস করলো না। তারা বললো, এটা পাহাড়ের ভুত। কিন্তু বাসুদেব জানতো, সে যা দেখেছে তা সত্য।\n\nসে শহরে গেল প্রত্নতত্ত্ববিদদের কাছে। তারা এসে দেখলো, আর অবাক হয়ে গেল।",
+                            "এটা ছিল হাজার বছরের পুরনো মন্দির। ইতিহাসে যার কোনো উল্লেখ নেই। বাসুদেবের আবিষ্কার পৃথিবীকে তাক লাগিয়ে দিল।\n\nসে বুঝলো, প্রকৃতি মানুষের কাছে অনেক রহস্য লুকিয়ে রাখে। যারা খুঁজে, তারাই পায়।",
+                            "বাসুদেব আর আগের মতো গাইড থাকলো না। সে হলো এই মন্দিরের রক্ষক। পর্যটকদের বলে বেড়ায় পাহাড়ের গল্প।\n\nচাঁদের পাহাড় এখন সবার কাছে পরিচিত। কিন্তু বাসুদেব জানে, আরও অনেক রহস্য লুকিয়ে আছে এই পাহাড়ের বুকে।"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 4,
+                title: "নদী ও নারী",
+                author: "অদ্বৈত মল্লবর্মণ",
+                cover: "linear-gradient(135deg, #5a4830 0%, #2d2418 100%)",
+                description: "নদীর মতো জীবন, নারীর সংগ্রাম",
+                chapters: [
+                    {
+                        title: "প্রথম অধ্যায়",
+                        pages: [
+                            "পদ্মা নদীর পাড়ে একটা ছোট্ট গ্রাম। সেখানে বাস করতো কুসুম। সে ছিল নৌকার মাঝিনী। নদী ছিল তার জীবন।\n\nকুসুমের স্বামী মাছ ধরতে গিয়ে নদীতে ডুবে মারা যায়। সে থেকে সে একা। কিন্তু হাল ছাড়েনি। নৌকা চালাতো, মানুষকে পার করতো।",
+                            "একদিন বন্যা এলো। নদী গ্রাম গ্রাস করতে শুরু করলো। মানুষ পালাতে লাগলো। কিন্তু কুসুম রইলো। সে তার নৌকা নিয়ে মানুষকে বাঁচাতে লাগলো।\n\nসারাদিন সারারাত সে নৌকা চালালো। ক্ষুধা, ক্লান্তি - কিছুই তাকে থামাতে পারলো না।",
+                            "বন্যা শেষে গ্রামের মানুষ কুসুমকে দেবী বলে ডাকতে লাগলো। সে কিছুই বললো না। শুধু বললো, নদী যেমন সবাইকে বাঁচায়, আমিও তেমন।\n\nকুসুম বুঝেছিল, নদী আর নারীর মধ্যে অদ্ভুত মিল। দুটোই জীবন দেয়, আবার কষ্টও দেয়।"
+                        ]
+                    },
+                    {
+                        title: "দ্বিতীয় অধ্যায়",
+                        pages: [
+                            "বছর কেটে গেল। কুসুম এখন বুড়ি। কিন্তু তবু নদীর ধারে থাকে। তার ছেলেমেয়ে নেই, কিন্তু গ্রামের সবাই তার আত্মীয়।\n\nএকদিন এক তরুণী এসে জিজ্ঞাসা করলো, কীভাবে শক্তি পান? কুসুম হেসে বললো, নদী দেখো। থামে না।",
+                            "তরুণীটি ছিল বিধবা। সমাজ তাকে অভিশাপ ভাবতো। কুসুম তাকে নিজের কাছে রাখলো। তাকে নৌকা চালাতে শিখালো।\n\nদুটি নারী, দুটি প্রজন্ম। নদীর পাড়ে তাদের নতুন জীবন শুরু হলো।",
+                            "কুসুম মারা যাওয়ার আগে বলে গেল, নদীকে ভয় পেয়ো না। ওটা জীবনের উৎস। তরুণী সেই কথা মনে রাখলো।\n\nনদী বয়ে চলেছে, যেমন জীবন বয়ে চলে। তরুণী এখন অন্যদের শেখাচ্ছে নৌকা চালাতে।"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 5,
+                title: "সেই সময়",
+                author: "সুনীল গঙ্গোপাধ্যায়",
+                cover: "linear-gradient(135deg, #4f3a50 0%, #2a1f2b 100%)",
+                description: "বাংলার নবজাগরণের ইতিহাস",
+                chapters: [
+                    {
+                        title: "প্রথম অধ্যায়",
+                        pages: [
+                            "ঊনিশ শতকের বাংলা। এক নবজাগরণের সময়। কলকাতার রাস্তায় নতুন ভাবনার হাওয়া বইছে। যুবকেরা স্বপ্ন দেখছে।\n\nনবীনকুমার ছিল তেমনই এক যুবক। সে পড়েছে ইংরেজি স্কুলে, কিন্তু মনে আছে বাংলার টান। সে ভাবছে কীভাবে দেশকে বদলানো যায়।",
+                            "নবীনকুমার মিললো অন্যান্য যুবকদের সাথে। তারা সবাই ভাবছে একই জিনিস। কীভাবে পরাধীনতা থেকে মুক্তি পাওয়া যায়।\n\nতারা সভা করলো, পত্রিকা বার করলো। লিখলো কবিতা, গান। সাহিত্য হয়ে উঠলো বিপ্লবের হাতিয়ার।",
+                            "একদিন নবীনকুমার ব্রাহ্মসমাজের সভায় গেল। সেখানে দেখলো নারীরা পর্দার বাইরে এসেছে। এটা ছিল বড় পরিবর্তন।\n\nসে বুঝলো, স্বাধীনতা শুধু রাজনৈতিক নয়, সামাজিকও। মানুষকে মুক্ত হতে হবে সব শৃঙ্খল থেকে।"
+                        ]
+                    },
+                    {
+                        title: "দ্বিতীয় অধ্যায়",
+                        pages: [
+                            "নবীনকুমার এখন পরিণত বয়সে। তার স্বপ্নের অনেকটাই সত্যি হয়েছে। বাংলা এখন জাগ্রত। সাহিত্য, শিল্প, বিজ্ঞান - সব ক্ষেত্রে উন্নতি।\n\nকিন্তু রাজনৈতিক স্বাধীনতা এখনও দূর। ব্রিটিশ শাসন চলছে। নতুন প্রজন্ম নতুন আন্দোলন শুরু করেছে।",
+                            "নবীনকুমার ভাবলো, তার কাজ শেষ। এখন তরুণদের হাতে দায়িত্ব দিয়ে বিদায় নেওয়ার সময়। তিনি তার জীবনের কাহিনী লিখতে বসলেন।\n\nসেই সময় - যখন বাংলা জেগে উঠেছিল। যখন স্বপ্ন ছিল নতুন, আন্দোলন ছিল তাজা।",
+                            "নবীনকুমারের বই প্রকাশিত হলো। তরুণ প্রজন্ম পড়লো, উদ্বুদ্ধ হলো। ইতিহাস থেকে শিখলো নতুন পথ।\n\nসেই সময় আর ফিরে আসবে না, কিন্তু তার শিক্ষা চিরকাল থাকবে। নবজাগরণের সেই আলো এখনও জ্বলছে।"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 6,
+                title: "গোদান",
+                author: "মুন্সী প্রেমচাঁদ",
+                cover: "linear-gradient(135deg, #5f4a32 0%, #2f2519 100%)",
+                description: "ভারতীয় কৃষকের জীবন সংগ্রাম",
+                chapters: [
+                    {
+                        title: "প্রথম অধ্যায়",
+                        pages: [
+                            "হোরী ছিল একজন সাধারণ কৃষক। তার স্বপ্ন ছিল একটি গরু কেনা। সেই জন্য সে সারাজীবন খেটেছে।\n\nগ্রামের জমিদার, মহাজন - সবাই তার রক্ত চুষে নিয়েছে। কিন্তু হোরী হাল ছাড়েনি। সে বিশ্বাস করতো, একদিন তার স্বপ্ন পূরণ হবে।",
+                            "হোরীর স্ত্রী ধনিয়া ছিল তার সবচেয়ে বড় শক্তি। দুজনে মিলে কাজ করতো। সন্তানদের বড় করতো। গরিব হলেও তাদের সংসারে শান্তি ছিল।\n\nএকদিন হোরী একটি বাছুর কিনলো। তার স্বপ্ন পূরণ হলো। কিন্তু সমস্যাও এলো। জমিদারের লোক এসে জমি বন্ধক রাখতে বললো।",
+                            "হোরী বন্ধক দিল না। তাকে গ্রাম থেকে তাড়িয়ে দেওয়া হলো। কিন্তু সে হাল ছাড়লো না। অন্য গ্রামে গিয়ে নতুন করে শুরু করলো।\n\nতার গোদানের স্বপ্ন ছিল অমর। সে বুঝেছিল, মানুষের সবচেয়ে বড় সম্পদ হলো স্বপ্ন।"
+                        ]
+                    },
+                    {
+                        title: "দ্বিতীয় অধ্যায়",
+                        pages: [
+                            "বছর কেটে গেল। হোরী এখন বুড়ো। তার গরু আছে, কিন্তু জমি নেই। তবু সে খুশি। তার স্বপ্ন পূরণ হয়েছে।\n\nতার ছেলে গোবর এখন পড়াশোনা করে। হোরী চায় তার ছেলে কৃষক হবে না, বড় মানুষ হবে।",
+                            "একদিন হোরী অসুস্থ হয়ে পড়লো। তাকে হাসপাতালে নিয়ে যেতে হলো। সেখানে সে দেখলো, কত মানুষ কত কষ্টে আছে।\n\nসে বুঝলো, তার একার কষ্ট নয়, সবার কষ্ট। গরিবের জীবন একই সুরে লেখা।",
+                            "হোরী মারা গেল। তার শেষ ইচ্ছা ছিল একটি গরু দান করা। গোদান। তার ছেলে সেই ইচ্ছা পূরণ করলো।\n\nহোরীর গল্প শেষ, কিন্তু কৃষকের সংগ্রাম চলছে। গোদান হলো মানুষের স্বপ্নের প্রতীক।"
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // State variables - Initialize before any function calls
+        let currentBook = null;
+        let currentChapterIndex = 0;
+        let currentPageIndex = 0;
+        let isReaderView = false;
+        let chaptersOpen = false;
+
+        // DOM Elements - Initialize after DOM is ready
+        let libraryView = null;
+        let readerView = null;
+        let bookGrid = null;
+        let backBtn = null;
+        let headerTitle = null;
+        let currentBookTitle = null;
+        let currentBookAuthor = null;
+        let pageContent = null;
+        let currentPageEl = null;
+        let totalPagesEl = null;
+        let progressPercent = null;
+        let progressFill = null;
+        let prevPageBtn = null;
+        let nextPageBtn = null;
+        let currentChapterEl = null;
+        let chapterToggle = null;
+        let chapterList = null;
+        let themeToggle = null;
+
+        // Initialize DOM elements
+        function initDOMElements() {
+            libraryView = document.getElementById('libraryView');
+            readerView = document.getElementById('readerView');
+            bookGrid = document.getElementById('bookGrid');
+            backBtn = document.getElementById('backBtn');
+            headerTitle = document.getElementById('headerTitle');
+            currentBookTitle = document.getElementById('currentBookTitle');
+            currentBookAuthor = document.getElementById('currentBookAuthor');
+            pageContent = document.getElementById('pageContent');
+            currentPageEl = document.getElementById('currentPage');
+            totalPagesEl = document.getElementById('totalPages');
+            progressPercent = document.getElementById('progressPercent');
+            progressFill = document.getElementById('progressFill');
+            prevPageBtn = document.getElementById('prevPage');
+            nextPageBtn = document.getElementById('nextPage');
+            currentChapterEl = document.getElementById('currentChapter');
+            chapterToggle = document.getElementById('chapterToggle');
+            chapterList = document.getElementById('chapterList');
+            themeToggle = document.getElementById('themeToggle');
+        }
+
+        // Utility functions
+        function toBengaliNumber(num) {
+            const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return num.toString().split('').map(d => bengaliDigits[parseInt(d)] || d).join('');
+        }
+
+        function getTotalPages(book) {
+            return book.chapters.reduce((total, chapter) => total + chapter.pages.length, 0);
+        }
+
+        function getCurrentGlobalPage(book, chapterIdx, pageIdx) {
+            let total = 0;
+            for (let i = 0; i < chapterIdx; i++) {
+                total += book.chapters[i].pages.length;
+            }
+            return total + pageIdx + 1;
+        }
+
+        // Render functions
+        function renderBooks() {
+            if (!bookGrid) return;
+            
+            bookGrid.innerHTML = books.map((book, index) => `
+                <article class="book-card fade-in-up" data-book-id="${book.id}" style="transition-delay: ${index * 100}ms" role="article" aria-label="${book.title}">
+                    <div class="book-cover" style="background: ${book.cover}">
+                        <div class="absolute inset-0 flex items-center justify-center p-4">
+                            <h3 class="font-display text-white text-lg md:text-xl text-center font-bold drop-shadow-lg">${book.title}</h3>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold text-[var(--fg)] mb-1">${book.title}</h4>
+                        <p class="text-[var(--muted)] text-sm mb-2">${book.author}</p>
+                        <p class="text-[var(--muted)] text-xs">${toBengaliNumber(getTotalPages(book))} পৃষ্ঠা</p>
+                    </div>
+                </article>
+            `).join('');
+
+            // Add click handlers
+            document.querySelectorAll('.book-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const bookId = parseInt(card.dataset.bookId);
+                    openBook(bookId);
+                });
+            });
+
+            // Trigger entrance animation
+            setTimeout(() => {
+                document.querySelectorAll('.book-card').forEach(card => {
+                    card.classList.add('visible');
+                });
+            }, 100);
+        }
+
+        function renderChapterList() {
+            if (!chapterList || !currentBook) return;
+            
+            const nav = chapterList.querySelector('nav');
+            nav.innerHTML = currentBook.chapters.map((chapter, idx) => `
+                <div class="chapter-item ${idx === currentChapterIndex ? 'active' : ''}" data-chapter="${idx}">
+                    ${chapter.title}
+                </div>
+            `).join('');
+
+            nav.querySelectorAll('.chapter-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const chapterIdx = parseInt(item.dataset.chapter);
+                    goToChapter(chapterIdx);
+                });
+            });
+        }
+
+        function renderPage() {
+            if (!currentBook || !pageContent) return;
+            
+            const chapter = currentBook.chapters[currentChapterIndex];
+            const pageText = chapter.pages[currentPageIndex];
+            
+            // Format paragraphs
+            const paragraphs = pageText.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('');
+            
+            pageContent.innerHTML = paragraphs;
+            pageContent.classList.remove('page-flip-enter');
+            void pageContent.offsetWidth; // Force reflow
+            pageContent.classList.add('page-flip-enter');
+
+            // Update UI
+            if (currentBookTitle) currentBookTitle.textContent = currentBook.title;
+            if (currentBookAuthor) currentBookAuthor.textContent = currentBook.author;
+            if (currentChapterEl) currentChapterEl.textContent = toBengaliNumber(currentChapterIndex + 1);
+            
+            const globalPage = getCurrentGlobalPage(currentBook, currentChapterIndex, currentPageIndex);
+            const totalPages = getTotalPages(currentBook);
+            
+            if (currentPageEl) currentPageEl.textContent = toBengaliNumber(globalPage);
+            if (totalPagesEl) totalPagesEl.textContent = toBengaliNumber(totalPages);
+            
+            const progress = Math.round((globalPage / totalPages) * 100);
+            if (progressPercent) progressPercent.textContent = toBengaliNumber(progress) + '%';
+            if (progressFill) progressFill.style.width = progress + '%';
+
+            // Update navigation buttons
+            const isFirstPage = currentChapterIndex === 0 && currentPageIndex === 0;
+            const isLastPage = currentChapterIndex === currentBook.chapters.length - 1 && 
+                              currentPageIndex === chapter.pages.length - 1;
+            
+            if (prevPageBtn) prevPageBtn.disabled = isFirstPage;
+            if (nextPageBtn) nextPageBtn.disabled = isLastPage;
+
+            // Update chapter list active state
+            renderChapterList();
+        }
+
+        function openBook(bookId) {
+            currentBook = books.find(b => b.id === bookId);
+            if (!currentBook) return;
+            
+            currentChapterIndex = 0;
+            currentPageIndex = 0;
+            isReaderView = true;
+
+            // Hide/show views
+            if (libraryView) libraryView.classList.add('hidden');
+            if (readerView) readerView.classList.remove('hidden');
+            
+            // Update header
+            if (backBtn) {
+                backBtn.style.opacity = '1';
+                backBtn.style.pointerEvents = 'auto';
+            }
+            if (headerTitle) headerTitle.textContent = 'পড়ুন';
+
+            renderPage();
+            createParticles();
+        }
+
+        function closeBook() {
+            isReaderView = false;
+            currentBook = null;
+            
+            if (libraryView) libraryView.classList.remove('hidden');
+            if (readerView) readerView.classList.add('hidden');
+            
+            if (backBtn) {
+                backBtn.style.opacity = '0';
+                backBtn.style.pointerEvents = 'none';
+            }
+            if (headerTitle) headerTitle.textContent = 'পুস্তক পাঠাগার';
+        }
+
+        function goToChapter(chapterIdx) {
+            if (!currentBook) return;
+            
+            currentChapterIndex = chapterIdx;
+            currentPageIndex = 0;
+            renderPage();
+            toggleChapterList(false);
+        }
+
+        function nextPage() {
+            if (!currentBook) return;
+            
+            const chapter = currentBook.chapters[currentChapterIndex];
+            
+            if (currentPageIndex < chapter.pages.length - 1) {
+                currentPageIndex++;
+            } else if (currentChapterIndex < currentBook.chapters.length - 1) {
+                currentChapterIndex++;
+                currentPageIndex = 0;
+            }
+            
+            renderPage();
+        }
+
+        function prevPage() {
+            if (!currentBook) return;
+            
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+            } else if (currentChapterIndex > 0) {
+                currentChapterIndex--;
+                currentPageIndex = currentBook.chapters[currentChapterIndex].pages.length - 1;
+            }
+            
+            renderPage();
+        }
+
+        function toggleChapterList(open) {
+            if (!chapterList) return;
+            
+            if (open === undefined) {
+                chaptersOpen = !chaptersOpen;
+            } else {
+                chaptersOpen = open;
+            }
+            
+            if (chaptersOpen) {
+                chapterList.classList.add('open');
+            } else {
+                chapterList.classList.remove('open');
+            }
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        }
+
+        // Particle effect
+        function createParticles() {
+            const container = document.getElementById('particles');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                particle.style.animation = `float ${3 + Math.random() * 4}s ease-in-out infinite`;
+                container.appendChild(particle);
+            }
+        }
+
+        // Add floating animation
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes float {
+                0%, 100% {
+                    opacity: 0;
+                    transform: translateY(0) scale(0);
+                }
+                50% {
+                    opacity: 0.6;
+                    transform: translateY(-20px) scale(1);
+                }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Event listeners
+        function initEventListeners() {
+            if (backBtn) {
+                backBtn.addEventListener('click', closeBook);
+            }
+            
+            if (prevPageBtn) {
+                prevPageBtn.addEventListener('click', prevPage);
+            }
+            
+            if (nextPageBtn) {
+                nextPageBtn.addEventListener('click', nextPage);
+            }
+            
+            if (chapterToggle) {
+                chapterToggle.addEventListener('click', () => toggleChapterList());
+            }
+            
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (!isReaderView) return;
+                
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    nextPage();
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    prevPage();
+                } else if (e.key === 'Escape') {
+                    if (chaptersOpen) {
+                        toggleChapterList(false);
+                    } else {
+                        closeBook();
+                    }
+                }
+            });
+
+            // Touch swipe for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                if (!isReaderView) return;
+                
+                touchEndX = e.changedTouches[0].screenX;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        nextPage();
+                    } else {
+                        prevPage();
+                    }
+                }
+            }, { passive: true });
+        }
+
+        // Initialize
+        function init() {
+            // Initialize DOM elements first
+            initDOMElements();
+            
+            // Load theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+            }
+
+            // Render books
+            renderBooks();
+            
+            // Initialize event listeners
+            initEventListeners();
+
+            // Entrance animation for header
+            const headerTitle = document.querySelector('header h1');
+            if (headerTitle) {
+                headerTitle.style.opacity = '0';
+                headerTitle.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    headerTitle.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    headerTitle.style.opacity = '1';
+                    headerTitle.style.transform = 'translateY(0)';
+                }, 200);
+            }
+        }
+
+        // Run when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
