@@ -14,35 +14,91 @@ $productId = htmlspecialchars($_GET['product'] ?? '', ENT_QUOTES, 'UTF-8');
 
 // Firebase config for JS
 $fbConfig = firebaseConfigJson();
+
+// Base URL for sharing
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST_URI'], '?');
 ?>
 <!DOCTYPE html>
 <html lang="<?= SITE_LANG ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars(SITE_NAME) ?> | <?= htmlspecialchars(SITE_TAGLINE) ?></title>
-    <meta name="description" content="<?= htmlspecialchars(SITE_DESCRIPTION) ?>">
-    <meta name="robots" content="index, follow, max-image-preview:large">
+    <title>IlmLibrary | বাংলাদেশের সেরা ইসলামিক বই অনলাইন শপ — কুরআন, হাদিস, দোয়া</title>
+    <meta name="description" content="IlmLibrary — বাংলাদেশের সবচেয়ে বিশ্বস্ত ইসলামিক বই অনলাইন শপ। কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী, ফিকহ ও ইসলামিক সাহিত্য — ক্যাশ অন ডেলিভারিতে সারাদেশে পাঠানো হয়। অর্ডার করুন আজই!">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="googlebot" content="index, follow, max-image-preview:large">
+    <meta name="author" content="IlmLibrary">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="geo.region" content="BD">
+    <meta name="geo.country" content="Bangladesh">
+    <meta name="language" content="Bengali">
+    <meta name="rating" content="general">
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="ORXiZq0snALnJG2JWQNu62-OHz1y5DOPveWW6A0dqkA" />
+
+    <!-- Canonical & Keywords -->
+    <link rel="canonical" id="canonicalTag" href="<?= htmlspecialchars($productId ? $baseUrl . '?product=' . $productId : $baseUrl) ?>">
+    <meta name="keywords" content="ইসলামিক বই অনলাইন বাংলাদেশ, কুরআন তাফসীর বই, সহীহ হাদিস বই, দোয়া মাসনুনা বই, ইসলামিক বই কিনুন, বাংলা ইসলামিক বই, IlmLibrary, ইসলামিক বই ঢাকা, সিরাতুন নবী বই, ফিকহ বই, ইসলামিক শিশু বই, কুরআন বাংলা অনুবাদ বই, হাদিস গ্রন্থ, ইসলামিক বই ক্যাশ অন ডেলিভারি, অনলাইন ইসলামিক লাইব্রেরি বাংলাদেশ">
 
     <!-- Open Graph -->
-    <meta property="og:type"        content="website">
-    <meta property="og:site_name"   content="<?= htmlspecialchars(SITE_NAME) ?>">
-    <meta property="og:title"       content="<?= htmlspecialchars(SITE_NAME . ' | ' . SITE_TAGLINE) ?>">
-    <meta property="og:description" content="<?= htmlspecialchars(SITE_DESCRIPTION) ?>">
+    <meta property="og:type"        content="<?= $productId ? 'product' : 'website' ?>">
+    <meta property="og:url"         id="ogUrl" content="<?= htmlspecialchars($productId ? $baseUrl . '?product=' . $productId : $baseUrl) ?>">
+    <meta property="og:site_name"   content="IlmLibrary">
+    <meta property="og:title"       content="IlmLibrary | বাংলাদেশের সেরা ইসলামিক বই অনলাইন শপ">
+    <meta property="og:description" content="কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী — সারাদেশে ক্যাশ অন ডেলিভারি। বিশ্বস্ত ইসলামিক বই শপ IlmLibrary তে অর্ডার করুন আজই।">
     <meta property="og:locale"      content="bn_BD">
 
     <!-- Twitter Card -->
     <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:title"       content="<?= htmlspecialchars(SITE_NAME . ' | ' . SITE_TAGLINE) ?>">
-    <meta name="twitter:description" content="<?= htmlspecialchars(SITE_DESCRIPTION) ?>">
+    <meta name="twitter:site"        content="@IlmLibrary">
+    <meta name="twitter:title"       content="IlmLibrary | বাংলাদেশের সেরা ইসলামিক বই অনলাইন শপ">
+    <meta name="twitter:description" content="কুরআন, হাদিস, দোয়া, সিরাহ — সারাদেশে ক্যাশ অন ডেলিভারি। IlmLibrary থেকে অর্ডার করুন আজই।">
 
-    <!-- Structured Data -->
+    <!-- Structured Data: WebSite with SearchAction -->
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"WebSite","name":"<?= SITE_NAME ?>","description":"<?= SITE_DESCRIPTION ?>","inLanguage":"bn"}
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "IlmLibrary",
+        "alternateName": "ইলম লাইব্রেরি",
+        "url": "<?= $baseUrl ?>",
+        "description": "বাংলাদেশের সবচেয়ে বিশ্বস্ত ইসলামিক বই অনলাইন শপ — কুরআন, হাদিস, দোয়া, সিরাহ ও আরও অনেক কিছু।",
+        "inLanguage": "bn",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "<?= $baseUrl ?>#shop?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
     </script>
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"BookStore","name":"<?= SITE_NAME ?>","description":"<?= SITE_TAGLINE ?> — Quran, Hadith, Dua, Islamic Stories","inLanguage":"bn","contactPoint":{"@type":"ContactPoint","contactType":"customer service","availableLanguage":"Bengali"}}
+    {
+        "@context": "https://schema.org",
+        "@type": "BookStore",
+        "name": "IlmLibrary",
+        "alternateName": "ইলম লাইব্রেরি",
+        "url": "<?= $baseUrl ?>",
+        "description": "বাংলাদেশের বিশ্বস্ত ইসলামিক বই অনলাইন শপ। কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী, ফিকহ, ইসলামিক সাহিত্য — সারাদেশে দ্রুত ডেলিভারি।",
+        "inLanguage": "bn",
+        "areaServed": {
+            "@type": "Country",
+            "name": "Bangladesh"
+        },
+        "priceRange": "৳৳",
+        "paymentAccepted": "Cash on Delivery, bKash, Nagad, Rocket",
+        "currenciesAccepted": "BDT",
+        "openingHours": "Mo-Th 09:00-21:00 Sa-Su 09:00-21:00",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "availableLanguage": ["Bengali", "English"],
+            "contactOption": "TollFree"
+        },
+        "sameAs": [
+            "https://www.facebook.com/IlmLibrary"
+        ]
+    }
     </script>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
@@ -405,6 +461,12 @@ $fbConfig = firebaseConfigJson();
         @media(min-width:1024px){
             .product-grid{grid-template-columns:repeat(4,1fr);gap:20px}
         }
+        /* ── PRODUCT LOADING SKELETON OVERLAY ── */
+        .product-sk-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:3000;display:flex;align-items:center;justify-content:center;padding:1rem}
+        .product-sk-box{background:var(--bg-card);width:100%;max-width:500px;border-radius:20px;overflow:hidden}
+        .product-sk-img{height:290px;border-radius:16px 16px 0 0}
+        .product-sk-body{padding:1.25rem 1.5rem}
+        .product-sk-line{border-radius:8px;margin-bottom:10px}
     </style>
 </head>
 <body>
@@ -711,6 +773,23 @@ $fbConfig = firebaseConfigJson();
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
 
+<!-- Product Loading Skeleton (instant display while Firebase connects) -->
+<?php if ($productId): ?>
+<div class="product-sk-overlay" id="productLoadingSkeleton">
+    <div class="product-sk-box">
+        <div class="sk product-sk-img"></div>
+        <div class="product-sk-body">
+            <div class="sk product-sk-line" style="width:38%;height:12px"></div>
+            <div class="sk product-sk-line" style="width:82%;height:20px"></div>
+            <div class="sk product-sk-line" style="width:55%;height:14px;margin-bottom:16px"></div>
+            <div class="sk product-sk-line" style="width:28%;height:28px;margin-bottom:20px"></div>
+            <div class="sk" style="height:46px;border-radius:10px;margin-bottom:8px"></div>
+            <div class="sk" style="height:46px;border-radius:10px"></div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <div class="toast" id="toast">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     <span id="toastTxt">Done!</span>
@@ -764,7 +843,6 @@ let activeCoupon     = null;
 let coupons          = {};
 let displayLimit     = ITEMS_PER_PAGE;
 let filteredProducts = [];
-let pendingProductId = null;
 
 // ── SVG snippets ──────────────────────────────────
 const SVG_CHECK        = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
@@ -781,19 +859,41 @@ const faqs = [
     { q: "কুপন কোড কোথায় পাবো?", a: "আমাদের Facebook পেজ ও WhatsApp গ্রুপে নিয়মিত কুপন কোড শেয়ার করা হয়।" }
 ];
 
-// ── INIT ──────────────────────────────────────────
+// ── PHP থেকে product ID (URL ?product=ID) ──────────
+const PHP_PRODUCT_ID = "<?= addslashes($productId) ?>";
+
+// Product modal race-condition fix: flag + central opener
+let productModalOpened = false;
+
+function hideProductSkeleton() {
+    const sk = document.getElementById('productLoadingSkeleton');
+    if (sk) sk.style.display = 'none';
+}
+
+// যে-callback-ই আগে fire করুক — modal একবারই খুলবে
+function tryOpenProductModal() {
+    if (productModalOpened || !PHP_PRODUCT_ID) return;
+    const p = products.find(x => x.id === PHP_PRODUCT_ID);
+    if (!p) return;
+    productModalOpened = true;
+    hideProductSkeleton();
+    openModal(PHP_PRODUCT_ID);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     initFAQ();
+    updateCartUI();
+    updateWishUI();
 
-    db.ref('products').on('value', snap => {
-        const data = snap.val();
-        products = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
-        document.getElementById('statBooks').textContent = products.length + '+';
-        filteredProducts = [...products];
-        renderProducts(filteredProducts);
-        renderHomeFeatured();
-        if (pendingProductId) { openModal(pendingProductId); pendingProductId = null; }
-    });
+    // Page সাথে সাথে দেখাও
+    if (PHP_PRODUCT_ID) {
+        showPage('shop', false);
+    } else {
+        const hash  = window.location.hash;
+        const pg    = hash ? hash.substring(1) : 'home';
+        const valid = ['home', 'shop', 'about', 'contact', 'wishlist'];
+        showPage(valid.includes(pg) ? pg : 'home', false);
+    }
 
     db.ref('settings').on('value', snap => {
         const d = snap.val();
@@ -809,11 +909,47 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
     db.ref('coupons').on('value', snap => { coupons = snap.val() || {}; });
-    updateCartUI();
-    updateWishUI();
-    router();
+
+    // ── PRODUCT DEEP-LINK FIX ─────────────────────────
+    // দুইটা listener — যে আগে data আনবে সেটাই modal খুলবে।
+    // productModalOpened flag দিয়ে double-open ঠেকানো হয়েছে।
+    if (PHP_PRODUCT_ID) {
+        // Fast path: শুধু ওই একটা product fetch করো
+        db.ref('products/' + PHP_PRODUCT_ID).once('value', snap => {
+            const pData = snap.val();
+            if (pData) {
+                // products array-তে না থাকলে add করো
+                if (!products.find(x => x.id === PHP_PRODUCT_ID)) {
+                    products = [{ id: PHP_PRODUCT_ID, ...pData }, ...products];
+                }
+                tryOpenProductModal();
+            } else {
+                // product পাওয়া যায়নি — skeleton hide করো
+                hideProductSkeleton();
+            }
+        });
+    }
+
+    // সব products background-এ load করো (realtime)
+    db.ref('products').on('value', snap => {
+        const data   = snap.val();
+        products     = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+        filteredProducts = [...products];
+        document.getElementById('statBooks').textContent = products.length + '+';
+        renderProducts(filteredProducts);
+        renderHomeFeatured();
+
+        if (PHP_PRODUCT_ID) {
+            // Fallback: .once না চললে এখান থেকে modal খোলো
+            tryOpenProductModal();
+        } else {
+            const h = window.location.hash;
+            if (h.startsWith('#product-') && document.getElementById('pModal').style.display !== 'flex') {
+                openModal(h.replace('#product-', ''));
+            }
+        }
+    });
 
     window.addEventListener('scroll', () => {
         document.getElementById('backTop').classList.toggle('visible', window.scrollY > 400);
@@ -822,25 +958,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('hashchange', router);
 
-// ── ROUTER ────────────────────────────────────────
+// ── ROUTER (hashchange only — initial load আলাদাভাবে handle হয়) ──
 function router() {
     const hash = window.location.hash || '#home';
     if (hash.startsWith('#product-')) {
-        const id = hash.split('product-')[1];
-        showPage('shop', false);
-        if (products.length) openModal(id);
-        else pendingProductId = id;
+        const id = decodeURIComponent(hash.replace('#product-', ''));
+        showPage('shop', false, () => openModal(id));
         return;
     }
     closeModalSilent();
-    const pg = hash.substring(1);
+    const pg    = hash.substring(1);
     const valid = ['home', 'shop', 'about', 'contact', 'wishlist'];
     showPage(valid.includes(pg) ? pg : 'home', true);
 }
 
-function showPage(name, animate) {
-    if (animate) document.getElementById('pageLoader').classList.add('active');
-    setTimeout(() => {
+function showPage(name, animate, callback) {
+    const _doShow = () => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         const el = document.getElementById('page-' + name);
         if (el) el.classList.add('active');
@@ -850,8 +983,206 @@ function showPage(name, animate) {
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
         if (name === 'wishlist') renderWishlist();
-        if (animate) document.getElementById('pageLoader').classList.remove('active');
-    }, animate ? 300 : 0);
+        updatePageSEO(name);
+        if (callback) callback();
+    };
+
+    if (animate) {
+        document.getElementById('pageLoader').classList.add('active');
+        setTimeout(() => {
+            _doShow();
+            document.getElementById('pageLoader').classList.remove('active');
+        }, 300);
+    } else {
+        // animate=false হলে সরাসরি চালাও — কোনো setTimeout নেই
+        _doShow();
+    }
+}
+
+// ── SEO: প্রতিটা page-এর জন্য আলাদা SEO ──────────
+function updatePageSEO(pageName) {
+    const baseUrl  = location.href.split('#')[0];
+    const pageUrl  = baseUrl + '#' + pageName;
+
+    const pageMeta = {
+        home: {
+            title: 'IlmLibrary | বাংলাদেশের সেরা ইসলামিক বই অনলাইন শপ — কুরআন, হাদিস, দোয়া',
+            desc:  'IlmLibrary — বাংলাদেশের সবচেয়ে বিশ্বস্ত ইসলামিক বই অনলাইন শপ। কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী, ফিকহ — ক্যাশ অন ডেলিভারিতে সারাদেশে পাঠানো হয়। অর্ডার করুন আজই!',
+            keywords: 'ইসলামিক বই অনলাইন বাংলাদেশ, কুরআন তাফসীর বই, সহীহ হাদিস বই, দোয়া মাসনুনা বই, বাংলা ইসলামিক বই কিনুন, IlmLibrary, ইসলামিক বই ঢাকা, ক্যাশ অন ডেলিভারি ইসলামিক বই, অনলাইন ইসলামিক লাইব্রেরি',
+            schema: {
+                "@context": "https://schema.org",
+                "@type": "WebPage",
+                "name": "IlmLibrary — হোম",
+                "url": pageUrl,
+                "description": "বাংলাদেশের সবচেয়ে বিশ্বস্ত ইসলামিক বই অনলাইন শপ — কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী",
+                "inLanguage": "bn",
+                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl },
+                "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "হোম", "item": pageUrl }
+                ]}
+            }
+        },
+        shop: {
+            title: 'ইসলামিক বই কিনুন অনলাইনে | IlmLibrary — কুরআন, হাদিস, দোয়া, সিরাহ',
+            desc:  'বাংলাদেশের সেরা ইসলামিক বই কালেকশন। কুরআন তাফসীর, সহীহ বুখারী-মুসলিম, রিয়াদুস সালেহীন, সিরাতুন নবী, ফিকহুস সুন্নাহ — সেরা মূল্যে অর্ডার করুন। সারাদেশে ক্যাশ অন ডেলিভারি।',
+            keywords: 'ইসলামিক বই কিনুন, কুরআন তাফসীর বই বাংলাদেশ, সহীহ বুখারী বাংলা, হাদিস বই অনলাইন, সিরাতুন নবী বই, ফিকহ বই বাংলা, ইসলামিক বই অর্ডার, দোয়া বই অনলাইন, ইসলামিক সাহিত্য বাংলাদেশ, বেস্ট ইসলামিক বুকশপ বাংলাদেশ',
+            schema: {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "name": "বই স্টোর — IlmLibrary",
+                "url": pageUrl,
+                "description": "সকল ইসলামিক বইয়ের সম্পূর্ণ সংগ্রহ",
+                "inLanguage": "bn",
+                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl },
+                "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "হোম", "item": baseUrl + '#home' },
+                    { "@type": "ListItem", "position": 2, "name": "বই স্টোর", "item": pageUrl }
+                ]},
+                "mainEntity": {
+                    "@type": "ItemList",
+                    "name": "ইসলামিক বই সংগ্রহ",
+                    "numberOfItems": products.length,
+                    "itemListElement": products.slice(0, 20).map((p, i) => ({
+                        "@type": "ListItem",
+                        "position": i + 1,
+                        "name": p.title,
+                        "url": baseUrl + '#product-' + p.id,
+                        "image": getMainImg(p),
+                        "item": {
+                            "@type": "Book",
+                            "name": p.title,
+                            "image": getMainImg(p),
+                            "description": p.description || p.title,
+                            "inLanguage": "bn",
+                            "genre": p.category || "Islamic",
+                            "offers": {
+                                "@type": "Offer",
+                                "price": p.price,
+                                "priceCurrency": "BDT",
+                                "availability": p.inStock !== false ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+                            }
+                        }
+                    }))
+                }
+            }
+        },
+        about: {
+            title: 'আমাদের সম্পর্কে | IlmLibrary — বাংলাদেশের বিশ্বস্ত ইসলামিক বুকশপ',
+            desc:  'IlmLibrary — বাংলাদেশের মুসলিম পাঠকদের জন্য তৈরি বিশ্বস্ত ইসলামিক বই প্রতিষ্ঠান। আমাদের লক্ষ্য সহীহ ও মানসম্পন্ন ইসলামিক বই সবার কাছে সহজলভ্য করা। ২০১৫ সাল থেকে সেবা দিয়ে আসছি।',
+            keywords: 'IlmLibrary সম্পর্কে, ইসলামিক বুকশপ বাংলাদেশ, বিশ্বস্ত ইসলামিক বই প্রতিষ্ঠান, বাংলাদেশ ইসলামিক লাইব্রেরি, অনলাইন ইসলামিক বই শপ',
+            schema: {
+                "@context": "https://schema.org",
+                "@type": "AboutPage",
+                "name": "আমাদের সম্পর্কে — IlmLibrary",
+                "url": pageUrl,
+                "description": "IlmLibrary-র পরিচয়, লক্ষ্য ও উদ্দেশ্য",
+                "inLanguage": "bn",
+                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl },
+                "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "হোম", "item": baseUrl + '#home' },
+                    { "@type": "ListItem", "position": 2, "name": "আমাদের সম্পর্কে", "item": pageUrl }
+                ]},
+                "mainEntity": {
+                    "@type": "Organization",
+                    "name": "IlmLibrary",
+                    "description": "বাংলাদেশের বিশ্বস্ত ইসলামিক বই লাইব্রেরি",
+                    "inLanguage": "bn"
+                },
+                "speakable": { "@type": "SpeakableSpecification", "cssSelector": [".about-hero h1", ".about-hero p"] }
+            }
+        },
+        contact: {
+            title: 'যোগাযোগ করুন | IlmLibrary — ইসলামিক বই অর্ডার ও কাস্টমার সাপোর্ট',
+            desc:  'IlmLibrary-তে ইসলামিক বই অর্ডার করতে বা যেকোনো প্রশ্নের জন্য আমাদের সাথে যোগাযোগ করুন। WhatsApp, ফোন বা ফর্মের মাধ্যমে অর্ডার দিন। সারাদেশে ক্যাশ অন ডেলিভারি।',
+            keywords: 'IlmLibrary যোগাযোগ, ইসলামিক বই অর্ডার করুন, ইসলামিক বুকশপ WhatsApp, বই অর্ডার বাংলাদেশ, ক্যাশ অন ডেলিভারি ইসলামিক বই, কাস্টমার সাপোর্ট বই শপ',
+            schema: {
+                "@context": "https://schema.org",
+                "@type": "ContactPage",
+                "name": "যোগাযোগ — IlmLibrary",
+                "url": pageUrl,
+                "description": "IlmLibrary-র সাথে যোগাযোগ করুন",
+                "inLanguage": "bn",
+                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl },
+                "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "হোম", "item": baseUrl + '#home' },
+                    { "@type": "ListItem", "position": 2, "name": "যোগাযোগ", "item": pageUrl }
+                ]},
+                "mainEntity": {
+                    "@type": "Organization",
+                    "name": "IlmLibrary",
+                    "contactPoint": {
+                        "@type": "ContactPoint",
+                        "contactType": "customer service",
+                        "availableLanguage": "Bengali",
+                        "contactOption": "TollFree"
+                    }
+                }
+            }
+        },
+        wishlist: {
+            title: 'উইশলিস্ট | IlmLibrary',
+            desc:  'আপনার পছন্দের ইসলামিক বইয়ের তালিকা।',
+            keywords: 'উইশলিস্ট, পছন্দের বই, IlmLibrary',
+            schema: {
+                "@context": "https://schema.org",
+                "@type": "WebPage",
+                "name": "উইশলিস্ট — IlmLibrary",
+                "url": pageUrl,
+                "noIndex": true,
+                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl }
+            }
+        }
+    };
+
+    const meta = pageMeta[pageName] || pageMeta['home'];
+
+    // Title আপডেট
+    document.title = meta.title;
+
+    // Meta tags আপডেট
+    const setMeta = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
+    setMeta('meta[name="description"]',      'content', meta.desc);
+    setMeta('meta[name="keywords"]',         'content', meta.keywords);
+    setMeta('meta[property="og:title"]',     'content', meta.title);
+    setMeta('meta[property="og:description"]','content', meta.desc);
+    setMeta('meta[property="og:url"]',       'content', pageUrl);
+    setMeta('meta[name="twitter:title"]',    'content', meta.title);
+    setMeta('meta[name="twitter:description"]','content', meta.desc);
+
+    // Canonical URL আপডেট
+    const canonical = document.getElementById('canonicalTag');
+    if (canonical) canonical.setAttribute('href', pageUrl);
+
+    // robots: wishlist page index করবে না
+    setMeta('meta[name="robots"]', 'content', pageName === 'wishlist' ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
+
+    // JSON-LD Schema আপডেট
+    const oldSchema = document.getElementById('page-schema-ld');
+    if (oldSchema) oldSchema.remove();
+    const schemaScript = document.createElement('script');
+    schemaScript.type = 'application/ld+json';
+    schemaScript.id   = 'page-schema-ld';
+    schemaScript.textContent = JSON.stringify(meta.schema);
+    document.head.appendChild(schemaScript);
+
+    // Home page-এ FAQ Schema যোগ করা
+    const oldFaqSchema = document.getElementById('faq-schema-ld');
+    if (oldFaqSchema) oldFaqSchema.remove();
+    if (pageName === 'home' || pageName === 'about') {
+        const faqScript = document.createElement('script');
+        faqScript.type = 'application/ld+json';
+        faqScript.id   = 'faq-schema-ld';
+        faqScript.textContent = JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faqs.map(f => ({
+                "@type": "Question",
+                "name": f.q,
+                "acceptedAnswer": { "@type": "Answer", "text": f.a }
+            }))
+        });
+        document.head.appendChild(faqScript);
+    }
 }
 
 function navToWishlist() { window.location.hash = '#wishlist'; }
@@ -1192,11 +1523,6 @@ function openModal(id) {
                 <span class="modal-stock ${inStock ? 'in-stock' : 'out-stock'}">${inStock ? SVG_CHECK + ' স্টকে আছে' : SVG_X + ' স্টক নেই'}</span>
             </div>
             ${deliveryBadge}
-            <div class="modal-desc-box">
-                <h4 class="modal-desc-title"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>বিবরণ</h4>
-                <p class="modal-desc-text">${p.description || 'এই বইয়ের বিস্তারিত বিবরণ শীঘ্রই আপডেট করা হবে।'}</p>
-            </div>
-            ${specRows ? `<div class="modal-specs"><h4 class="modal-desc-title" style="margin-bottom:.5rem">${SVG_LIST} বিস্তারিত তথ্য</h4><table>${specRows}</table></div>` : ''}
             <div class="modal-price">Tk ${p.price.toLocaleString()}${p.oldPrice ? ` <small>Tk ${p.oldPrice}</small>` : ''}${disc >= 5 ? ` <span class="p-disc" style="font-size:.85rem">-${disc}%</span>` : ''}</div>
             <div class="modal-actions">
                 <button class="btn-add${!inStock ? ' disabled' : ''}" style="padding:13px;font-size:.9rem" onclick="addToCart('${p.id}')" ${!inStock ? 'disabled' : ''}>
@@ -1213,6 +1539,11 @@ function openModal(id) {
                     <button class="btn-share" onclick="shareToWA('${p.title.replace(/'/g, "\\'")}','${p.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Share</button>
                 </div>
             </div>
+            <div class="modal-desc-box" style="margin-top:1.25rem">
+                <h4 class="modal-desc-title"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>বিবরণ</h4>
+                <p class="modal-desc-text">${p.description || 'এই বইয়ের বিস্তারিত বিবরণ শীঘ্রই আপডেট করা হবে।'}</p>
+            </div>
+            ${specRows ? `<div class="modal-specs"><h4 class="modal-desc-title" style="margin-bottom:.5rem">${SVG_LIST} বিস্তারিত তথ্য</h4><table>${specRows}</table></div>` : ''}
             <div class="modal-reviews">
                 <h4>${SVG_MSG} পাঠকদের মতামত (${reviews.length})</h4>
                 ${reviewsHtml}
@@ -1221,6 +1552,71 @@ function openModal(id) {
 
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+
+    // ── Google SEO: Dynamic Product Schema (JSON-LD) ──
+    const existingSchema = document.getElementById('product-schema-ld');
+    if (existingSchema) existingSchema.remove();
+
+    const productUrl = location.href.split('#')[0] + '#product-' + p.id;
+    const productImage = images[0] || '';
+    const availability = inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+    const avgRating = (p.rating || 5).toFixed(1);
+
+    const schema = {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": p.title,
+        "description": p.description || p.title,
+        "image": productImage,
+        "url": productUrl,
+        "sku": p.id,
+        "brand": { "@type": "Brand", "name": p.author || "IlmLibrary" },
+        "category": p.category || "Islamic Books",
+        "offers": {
+            "@type": "Offer",
+            "url": productUrl,
+            "priceCurrency": "BDT",
+            "price": p.price,
+            "priceValidUntil": new Date(Date.now() + 30*24*60*60*1000).toISOString().slice(0,10),
+            "availability": availability,
+            "itemCondition": "https://schema.org/NewCondition",
+            "seller": { "@type": "Organization", "name": "IlmLibrary" }
+        }
+    };
+    if (reviews.length > 0) {
+        schema["aggregateRating"] = {
+            "@type": "AggregateRating",
+            "ratingValue": avgRating,
+            "reviewCount": reviews.length,
+            "bestRating": "5",
+            "worstRating": "1"
+        };
+        schema["review"] = reviews.slice(0,5).map(r => ({
+            "@type": "Review",
+            "reviewRating": { "@type": "Rating", "ratingValue": r.rating || 5, "bestRating": "5" },
+            "author": { "@type": "Person", "name": r.name || "পাঠক" },
+            "reviewBody": r.text || ""
+        }));
+    }
+
+    const schemaScript = document.createElement('script');
+    schemaScript.type = 'application/ld+json';
+    schemaScript.id = 'product-schema-ld';
+    schemaScript.textContent = JSON.stringify(schema);
+    document.head.appendChild(schemaScript);
+
+    // ── Dynamic meta tags (Open Graph + title) ──
+    document.title = p.title + ' | IlmLibrary';
+    const setMeta = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
+    setMeta('meta[name="description"]', 'content', p.description || p.title);
+    setMeta('meta[property="og:title"]', 'content', p.title + ' | IlmLibrary');
+    setMeta('meta[property="og:description"]', 'content', p.description || p.title);
+    const ogImg2 = document.querySelector('meta[property="og:image"]');
+    if (ogImg2) ogImg2.setAttribute('content', productImage);
+    else if (productImage) { const m = document.createElement('meta'); m.setAttribute('property','og:image'); m.setAttribute('content',productImage); document.head.appendChild(m); }
+    const ogUrl2 = document.querySelector('meta[property="og:url"]');
+    if (ogUrl2) ogUrl2.setAttribute('content', productUrl);
+    else { const m = document.createElement('meta'); m.setAttribute('property','og:url'); m.setAttribute('content',productUrl); document.head.appendChild(m); }
 }
 
 function changeImg(el, src) {
@@ -1244,15 +1640,17 @@ function closeModalSilent() {
 }
 
 // ── SHARE ─────────────────────────────────────────
+function getProductUrl(id) {
+    return location.href.split('?')[0].split('#')[0] + '?product=' + id;
+}
 function copyLink(id) {
-    const url = location.href.split('#')[0] + '#product-' + id;
-    navigator.clipboard.writeText(url).then(() => showToast("লিংক কপি হয়েছে!"));
+    navigator.clipboard.writeText(getProductUrl(id)).then(() => showToast("লিংক কপি হয়েছে!"));
 }
 function shareToFB(id) {
-    window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(location.href.split('#')[0] + '#product-' + id), '_blank');
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(getProductUrl(id)), '_blank');
 }
 function shareToWA(title, id) {
-    const url = encodeURIComponent(location.href.split('#')[0] + '#product-' + id);
+    const url = encodeURIComponent(getProductUrl(id));
     window.open(`https://wa.me/?text=${encodeURIComponent('দেখুন এই বইটি: ' + title + ' - ')}${url}`, '_blank');
 }
 function directWA(title) {
@@ -1275,7 +1673,6 @@ function handleContact(e) {
     e.target.reset();
 }
 
-// ── TOAST ─────────────────────────────────────────
 function showToast(msg) {
     document.getElementById('toastTxt').textContent = msg;
     const t = document.getElementById('toast');
