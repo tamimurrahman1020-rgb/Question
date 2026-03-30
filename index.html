@@ -1,26 +1,5 @@
-<?php
-// ══════════════════════════════════════════════
-//  IlmLibrary — Main Entry Point
-// ══════════════════════════════════════════════
-require_once __DIR__ . '/config.txt';
-
-// Current page from query string (fallback to 'home')
-$page = htmlspecialchars($_GET['p'] ?? 'home', ENT_QUOTES, 'UTF-8');
-$validPages = ['home', 'shop', 'about', 'contact', 'wishlist'];
-if (!in_array($page, $validPages)) $page = 'home';
-
-// Product ID for deep-link sharing (e.g. ?product=abc123)
-$productId = htmlspecialchars($_GET['product'] ?? '', ENT_QUOTES, 'UTF-8');
-
-// Firebase config for JS
-$fbConfig = firebaseConfigJson();
-
-// Base URL for sharing
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST_URI'], '?');
-?>
 <!DOCTYPE html>
-<html lang="<?= SITE_LANG ?>">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,16 +13,14 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
     <meta name="geo.country" content="Bangladesh">
     <meta name="language" content="Bengali">
     <meta name="rating" content="general">
-    <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="ORXiZq0snALnJG2JWQNu62-OHz1y5DOPveWW6A0dqkA" />
 
-    <!-- Canonical & Keywords -->
-    <link rel="canonical" id="canonicalTag" href="<?= htmlspecialchars($productId ? $baseUrl . '?product=' . $productId : $baseUrl) ?>">
+    <link rel="canonical" id="canonicalTag" href="">
     <meta name="keywords" content="ইসলামিক বই অনলাইন বাংলাদেশ, কুরআন তাফসীর বই, সহীহ হাদিস বই, দোয়া মাসনুনা বই, ইসলামিক বই কিনুন, বাংলা ইসলামিক বই, IlmLibrary, ইসলামিক বই ঢাকা, সিরাতুন নবী বই, ফিকহ বই, ইসলামিক শিশু বই, কুরআন বাংলা অনুবাদ বই, হাদিস গ্রন্থ, ইসলামিক বই ক্যাশ অন ডেলিভারি, অনলাইন ইসলামিক লাইব্রেরি বাংলাদেশ">
 
     <!-- Open Graph -->
-    <meta property="og:type"        content="<?= $productId ? 'product' : 'website' ?>">
-    <meta property="og:url"         id="ogUrl" content="<?= htmlspecialchars($productId ? $baseUrl . '?product=' . $productId : $baseUrl) ?>">
+    <meta property="og:type"        id="ogType"  content="website">
+    <meta property="og:url"         id="ogUrl"   content="">
     <meta property="og:site_name"   content="IlmLibrary">
     <meta property="og:title"       content="IlmLibrary | বাংলাদেশের সেরা ইসলামিক বই অনলাইন শপ">
     <meta property="og:description" content="কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী — সারাদেশে ক্যাশ অন ডেলিভারি। বিশ্বস্ত ইসলামিক বই শপ IlmLibrary তে অর্ডার করুন আজই।">
@@ -56,35 +33,32 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
     <meta name="twitter:description" content="কুরআন, হাদিস, দোয়া, সিরাহ — সারাদেশে ক্যাশ অন ডেলিভারি। IlmLibrary থেকে অর্ডার করুন আজই।">
 
     <!-- Structured Data: WebSite with SearchAction -->
-    <script type="application/ld+json">
+    <script type="application/ld+json" id="website-schema-ld">
     {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "IlmLibrary",
         "alternateName": "ইলম লাইব্রেরি",
-        "url": "<?= $baseUrl ?>",
+        "url": "",
         "description": "বাংলাদেশের সবচেয়ে বিশ্বস্ত ইসলামিক বই অনলাইন শপ — কুরআন, হাদিস, দোয়া, সিরাহ ও আরও অনেক কিছু।",
         "inLanguage": "bn",
         "potentialAction": {
             "@type": "SearchAction",
-            "target": "<?= $baseUrl ?>#shop?q={search_term_string}",
+            "target": "#shop?q={search_term_string}",
             "query-input": "required name=search_term_string"
         }
     }
     </script>
-    <script type="application/ld+json">
+    <script type="application/ld+json" id="bookstore-schema-ld">
     {
         "@context": "https://schema.org",
         "@type": "BookStore",
         "name": "IlmLibrary",
         "alternateName": "ইলম লাইব্রেরি",
-        "url": "<?= $baseUrl ?>",
+        "url": "",
         "description": "বাংলাদেশের বিশ্বস্ত ইসলামিক বই অনলাইন শপ। কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী, ফিকহ, ইসলামিক সাহিত্য — সারাদেশে দ্রুত ডেলিভারি।",
         "inLanguage": "bn",
-        "areaServed": {
-            "@type": "Country",
-            "name": "Bangladesh"
-        },
+        "areaServed": { "@type": "Country", "name": "Bangladesh" },
         "priceRange": "৳৳",
         "paymentAccepted": "Cash on Delivery, bKash, Nagad, Rocket",
         "currenciesAccepted": "BDT",
@@ -95,9 +69,7 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
             "availableLanguage": ["Bengali", "English"],
             "contactOption": "TollFree"
         },
-        "sameAs": [
-            "https://www.facebook.com/IlmLibrary"
-        ]
+        "sameAs": ["https://www.facebook.com/IlmLibrary"]
     }
     </script>
 
@@ -111,30 +83,25 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         button{border:none;outline:none;background:none;cursor:pointer;font-family:inherit}
         img{max-width:100%;display:block;border-radius:8px}
         .container{width:100%;max-width:1200px;margin:0 auto;padding:0 1rem}
-
         /* ── ANNOUNCEMENT BAR ── */
         #announcementBar{background:linear-gradient(90deg,var(--primary),var(--primary-light));color:#fff;text-align:center;padding:10px 1rem;font-size:0.82rem;font-weight:600;position:relative;display:none}
         #announcementBar.show{display:block}
         #closeAnn{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:1.1rem;opacity:0.7;cursor:pointer}
-
         /* ── PAGE LOADER ── */
         .page-loader{position:fixed;top:0;left:0;width:100%;height:3px;background:rgba(37,99,235,0.15);z-index:9999;opacity:0;visibility:hidden;transition:opacity .3s}
         .page-loader.active{opacity:1;visibility:visible}
         .page-loader::after{content:'';position:absolute;left:0;top:0;height:100%;width:30%;background:var(--primary-light);animation:loadBar 1s ease-in-out infinite}
         @keyframes loadBar{0%{left:-30%}100%{left:100%}}
-
         /* ── SKELETON ── */
         .skeleton-card{background:var(--bg-card);border-radius:var(--radius);padding:12px;border:1px solid var(--border)}
         .sk{background:linear-gradient(90deg,#f0f4f8 25%,#e2e8f0 50%,#f0f4f8 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
         .sk-img{height:200px;margin-bottom:12px}
         .sk-txt{height:14px;margin-bottom:8px}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-
         /* ── PAGES ── */
         .page{display:none;animation:fadeUp .4s ease-out}
         .page.active{display:block}
         @keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
-
         /* ── HEADER ── */
         header{background:var(--bg-card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000;box-shadow:var(--shadow)}
         .nav-top{display:flex;align-items:center;justify-content:space-between;height:68px}
@@ -172,7 +139,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .mobile-search{position:relative;margin-bottom:1rem}
         .mobile-search input{width:100%;padding:12px 14px 12px 42px;border-radius:10px;border:1px solid var(--border);background:var(--bg-body);font-family:inherit;font-size:.9rem}
         .mobile-search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--text-muted);pointer-events:none}
-
         /* ── HERO ── */
         .hero{background:linear-gradient(135deg,#0f2260 0%,var(--primary) 40%,var(--primary-light) 100%);padding:4rem 1rem 3rem;color:#fff;border-radius:0 0 28px 28px;margin-bottom:2rem;position:relative;overflow:hidden}
         .hero::before{content:'';position:absolute;top:-50px;right:-80px;width:300px;height:300px;background:rgba(255,255,255,.04);border-radius:50%}
@@ -191,7 +157,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .stat-item{text-align:center}
         .stat-num{font-size:1.5rem;font-weight:800;color:var(--accent)}
         .stat-lbl{font-size:.75rem;opacity:.8}
-
         /* ── HOME FEATURES ── */
         .section-title{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--primary);margin-bottom:.4rem;display:flex;align-items:center;gap:10px}
         .section-sub{color:var(--text-muted);font-size:.9rem;margin-bottom:1.75rem}
@@ -201,10 +166,8 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .feat-card svg{width:36px;height:36px;color:var(--primary-light);margin-bottom:.75rem}
         .feat-card h3{color:var(--primary);font-size:1rem;margin-bottom:.4rem}
         .feat-card p{color:var(--text-muted);font-size:.85rem}
-
         /* ── FEATURED BOOKS (HOME) ── */
         .featured-section{padding:2rem 0}
-
         /* ── SHOP CONTROLS ── */
         .shop-controls{padding:1.25rem 0;position:sticky;top:68px;background:var(--bg-body);z-index:10;border-bottom:1px solid var(--border)}
         .controls-wrap{display:flex;flex-direction:column;gap:.75rem}
@@ -218,7 +181,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .result-count{font-size:.85rem;color:var(--text-muted)}
         .result-count span{font-weight:700;color:var(--text-main)}
         select{padding:9px 32px 9px 13px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-main);font-weight:600;font-size:.85rem;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
-
         /* ── PRODUCT GRID ── */
         .product-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:3rem}
         .product-card{background:var(--bg-card);border-radius:var(--radius);padding:12px;border:1px solid var(--border);transition:var(--transition);display:flex;flex-direction:column}
@@ -257,12 +219,10 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .btn-wa{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:9px;border-radius:10px;width:100%;margin-top:6px;font-weight:700;font-size:.78rem;display:flex;align-items:center;justify-content:center;gap:5px;transition:var(--transition)}
         .btn-wa:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(37,211,102,.3)}
         .btn-wa svg{width:15px;height:15px}
-
         /* ── LOAD MORE ── */
         .load-more-wrap{text-align:center;padding:1rem 0 2rem}
         .btn-load-more{background:var(--bg-card);border:1px solid var(--border);color:var(--text-main);padding:12px 32px;border-radius:12px;font-weight:700;font-size:.9rem;transition:var(--transition)}
         .btn-load-more:hover{border-color:var(--primary-light);color:var(--primary-light)}
-
         /* ── ABOUT PAGE ── */
         .page-header{background:linear-gradient(135deg,var(--primary),var(--primary-light));padding:3rem 1rem;text-align:center;color:#fff;margin-bottom:2rem;border-radius:0 0 24px 24px}
         .page-header h1{font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:.4rem;display:flex;align-items:center;justify-content:center;gap:12px}
@@ -276,7 +236,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .feature-card:hover{border-color:var(--primary-light);transform:translateY(-5px);box-shadow:var(--shadow-lg)}
         .feature-icon{width:56px;height:56px;background:var(--primary-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem}
         .feature-icon svg{width:26px;height:26px;color:var(--primary-light)}
-
         /* ── TEAM ── */
         .team-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:1.5rem}
         .team-card{background:var(--bg-card);border-radius:var(--radius);padding:1.5rem 1rem;text-align:center;border:1px solid var(--border);transition:var(--transition)}
@@ -284,7 +243,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .team-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;font-size:1.5rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
         .team-card h4{font-size:.95rem;margin-bottom:.25rem;color:var(--text-main)}
         .team-card p{font-size:.8rem;color:var(--text-muted)}
-
         /* ── FAQ ── */
         .faq-section{padding:2rem 0}
         .faq-item{border:1px solid var(--border);border-radius:12px;margin-bottom:.75rem;overflow:hidden}
@@ -296,7 +254,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease}
         .faq-a.open{max-height:200px}
         .faq-a p{padding:.75rem 1.25rem 1rem;color:var(--text-muted);font-size:.875rem;line-height:1.75}
-
         /* ── CONTACT ── */
         .contact-section{padding:2rem 0}
         .contact-wrapper{display:grid;grid-template-columns:1fr;gap:2rem}
@@ -315,7 +272,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .info-icon svg{width:20px;height:20px;color:var(--primary-light)}
         .info-details h4{font-size:.875rem;font-weight:700;color:var(--text-main);margin-bottom:.2rem}
         .info-details p{font-size:.825rem;color:var(--text-muted)}
-
         /* ── NEWSLETTER ── */
         .newsletter{background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:20px;padding:2.5rem 1.5rem;text-align:center;color:#fff;margin:2rem 0}
         .newsletter h3{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:.5rem}
@@ -324,7 +280,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .newsletter-form input{flex:1;padding:12px 16px;border-radius:10px;border:none;font-family:inherit;font-size:.875rem;min-width:180px}
         .newsletter-form button{background:var(--accent);color:#fff;padding:12px 20px;border-radius:10px;font-weight:700;font-size:.85rem;white-space:nowrap;transition:var(--transition)}
         .newsletter-form button:hover{background:#c9a227;transform:translateY(-2px)}
-
         /* ── FOOTER ── */
         footer{background:var(--primary);color:#fff;padding:3rem 0 1.5rem;margin-top:3rem}
         .footer-grid{display:grid;grid-template-columns:1fr;gap:2rem;margin-bottom:2rem}
@@ -345,7 +300,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .footer-badges{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
         .footer-badge{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:600;display:flex;align-items:center;gap:5px}
         .footer-badge svg{width:12px;height:12px}
-
         /* ── CART SIDEBAR ── */
         .cart-overlay{position:fixed;top:0;right:0;width:100%;height:100%;background:var(--bg-card);z-index:2000;transform:translateX(100%);transition:.35s ease-out;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.1)}
         .cart-overlay.active{transform:translateX(0)}
@@ -379,7 +333,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .subtotal-row,.discount-row,.delivery-row,.total-row{display:flex;justify-content:space-between;font-size:.875rem;padding:.35rem 0;color:var(--text-muted)}
         .total-row{font-weight:800;color:var(--text-main);font-size:1rem;border-top:1px solid var(--border);margin-top:.35rem;padding-top:.6rem}
         .total-row span:last-child{color:var(--primary)}
-
         /* ── MODAL ── */
         .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:3000;display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
         .modal-content{background:var(--bg-card);width:100%;max-width:500px;border-radius:20px;position:relative;margin:auto}
@@ -429,7 +382,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .no-reviews{font-size:.8rem;color:var(--text-muted);text-align:center;padding:.5rem}
         .delivery-badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;border:1px solid #86efac;padding:6px 12px;border-radius:20px;font-size:.78rem;font-weight:700;margin-bottom:1rem}
         .delivery-badge svg{width:14px;height:14px;flex-shrink:0}
-
         /* ── FLOATS ── */
         .float-wa{position:fixed;bottom:24px;right:20px;z-index:900;background:#25D366;color:#fff;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(37,211,102,.5);transition:var(--transition)}
         .float-wa:hover{transform:scale(1.1)}
@@ -438,12 +390,10 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         .back-top.visible{opacity:1;visibility:visible}
         .back-top:hover{transform:translateY(-3px)}
         .back-top svg{width:20px;height:20px}
-
         /* ── TOAST ── */
         .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(110px);background:var(--primary);color:#fff;padding:13px 26px;border-radius:12px;z-index:5000;box-shadow:0 10px 30px rgba(0,0,0,.2);font-weight:600;display:flex;align-items:center;gap:9px;transition:transform .4s cubic-bezier(.4,0,.2,1);font-size:.875rem;white-space:nowrap}
         .toast.show{transform:translateX(-50%) translateY(0)}
         .toast svg{width:19px;height:19px;color:var(--tiffany)}
-
         /* ── RESPONSIVE ── */
         @media(min-width:768px){
             .nav-links{display:flex}
@@ -462,7 +412,8 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
             .product-grid{grid-template-columns:repeat(4,1fr);gap:20px}
         }
         /* ── PRODUCT LOADING SKELETON OVERLAY ── */
-        .product-sk-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:3000;display:flex;align-items:center;justify-content:center;padding:1rem}
+        .product-sk-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:3000;display:none;align-items:center;justify-content:center;padding:1rem}
+        .product-sk-overlay.show{display:flex}
         .product-sk-box{background:var(--bg-card);width:100%;max-width:500px;border-radius:20px;overflow:hidden}
         .product-sk-img{height:290px;border-radius:16px 16px 0 0}
         .product-sk-body{padding:1.25rem 1.5rem}
@@ -726,7 +677,7 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; <?= date('Y') ?> <?= htmlspecialchars(SITE_NAME) ?>. All Rights Reserved. Made with <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> for the Ummah.</p>
+            <p>&copy; <span id="footerYear"></span> IlmLibrary. All Rights Reserved. Made with <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> for the Ummah.</p>
             <div class="footer-badges">
                 <span class="footer-badge"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Secure Payment</span>
                 <span class="footer-badge"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Fast Delivery</span>
@@ -751,7 +702,7 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         <div id="couponMsg"></div>
         <div class="subtotal-row"><span>Subtotal</span><span id="cartSubtotal">Tk 0</span></div>
         <div class="discount-row" id="discountRow" style="display:none"><span>Discount</span><span id="discountAmt">-Tk 0</span></div>
-        <div class="delivery-row"><span>🚚 Delivery Charge</span><span id="deliveryCharge">Tk <?= DELIVERY_CHARGE ?></span></div>
+        <div class="delivery-row"><span>🚚 Delivery Charge</span><span id="deliveryCharge">Tk 80</span></div>
         <div class="total-row"><span>Total</span><span id="cartTotal">Tk 0</span></div>
         <button style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;padding:13px;border-radius:12px;width:100%;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:var(--transition)" onclick="checkoutWA()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -766,15 +717,14 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
 </div>
 
 <!-- Float Buttons -->
-<a class="float-wa" id="floatWA" href="https://wa.me/88<?= DEFAULT_WHATSAPP ?>?text=Assalamu Alaikum" target="_blank" rel="noopener" aria-label="WhatsApp">
+<a class="float-wa" id="floatWA" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
 <button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
 
-<!-- Product Loading Skeleton (instant display while Firebase connects) -->
-<?php if ($productId): ?>
+<!-- Product Loading Skeleton (shown via JS when ?product= param exists) -->
 <div class="product-sk-overlay" id="productLoadingSkeleton">
     <div class="product-sk-box">
         <div class="sk product-sk-img"></div>
@@ -788,7 +738,6 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
         </div>
     </div>
 </div>
-<?php endif; ?>
 
 <div class="toast" id="toast">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -800,49 +749,68 @@ $baseUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-// ── Firebase Init (config from PHP) ──────────────
-const firebaseConfig = <?= $fbConfig ?>;
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+// ══════════════════════════════════════════════════
+//  IlmLibrary — config.txt থেকে Firebase init
+// ══════════════════════════════════════════════════
 
-// ── Constants (from PHP) ──────────────────────────
-const DELIVERY_CHARGE = <?= DELIVERY_CHARGE ?>;
-const ITEMS_PER_PAGE  = <?= ITEMS_PER_PAGE ?>;
+// Footer year
+document.getElementById('footerYear').textContent = new Date().getFullYear();
 
-// ── Visitor Tracking ──────────────────────────────
-(function trackVisit() {
-    const today    = new Date();
-    const dateKey  = today.toISOString().slice(0, 10);
-    const hourKey  = today.getHours();
-    const stKey    = 'ilm_visited_' + dateKey;
+// URL ?product= param (PHP এর $productId এর equivalent)
+const PHP_PRODUCT_ID = new URLSearchParams(location.search).get('product') || '';
 
-    if (localStorage.getItem(stKey)) return;
+// Base URL
+const BASE_URL = location.href.split('?')[0];
 
-    // পুরনো দিনের key পরিষ্কার
-    Object.keys(localStorage).forEach(k => {
-        if (k.startsWith('ilm_visited_') && k !== stKey) localStorage.removeItem(k);
-    });
-    localStorage.setItem(stKey, '1');
+// Canonical & OG tags update (PHP এর dynamic URL replacement)
+(function initMeta() {
+    const canonical = document.getElementById('canonicalTag');
+    const ogUrl     = document.getElementById('ogUrl');
+    const ogType    = document.getElementById('ogType');
+    const url = PHP_PRODUCT_ID ? BASE_URL + '?product=' + PHP_PRODUCT_ID : BASE_URL;
+    if (canonical) canonical.setAttribute('href', url);
+    if (ogUrl)     ogUrl.setAttribute('content', url);
+    if (ogType)    ogType.setAttribute('content', PHP_PRODUCT_ID ? 'product' : 'website');
 
-    db.ref('visits/' + dateKey).transaction(data => {
-        if (!data) return { count: 1, hours: { [hourKey]: 1 } };
-        data.count = (data.count || 0) + 1;
-        if (!data.hours) data.hours = {};
-        data.hours[hourKey] = (data.hours[hourKey] || 0) + 1;
-        return data;
-    });
+    // WebSite schema URL update
+    try {
+        const wsSchema = document.getElementById('website-schema-ld');
+        if (wsSchema) {
+            const d = JSON.parse(wsSchema.textContent);
+            d.url = BASE_URL;
+            d.potentialAction.target = BASE_URL + '#shop?q={search_term_string}';
+            wsSchema.textContent = JSON.stringify(d);
+        }
+        const bsSchema = document.getElementById('bookstore-schema-ld');
+        if (bsSchema) {
+            const d = JSON.parse(bsSchema.textContent);
+            d.url = BASE_URL;
+            bsSchema.textContent = JSON.stringify(d);
+        }
+    } catch(e) {}
 })();
 
-// ── State ─────────────────────────────────────────
+// Show skeleton immediately if product deep-link
+if (PHP_PRODUCT_ID) {
+    document.getElementById('productLoadingSkeleton').classList.add('show');
+}
+
+// ── App State ─────────────────────────────────────
+let DELIVERY_CHARGE  = 80;
+let ITEMS_PER_PAGE   = 12;
+let DEFAULT_WHATSAPP = '01XXXXXXXXX';
+
 let products         = [];
-let storeSettings    = { whatsapp: "<?= DEFAULT_WHATSAPP ?>" };
+let storeSettings    = {};
 let cart             = JSON.parse(localStorage.getItem('ilm_cart')) || [];
 let wishlist         = JSON.parse(localStorage.getItem('ilm_wish')) || [];
-let activeCategory   = "All";
+let activeCategory   = 'All';
 let activeCoupon     = null;
 let coupons          = {};
 let displayLimit     = ITEMS_PER_PAGE;
 let filteredProducts = [];
+let productModalOpened = false;
+let db;
 
 // ── SVG snippets ──────────────────────────────────
 const SVG_CHECK        = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
@@ -859,33 +827,68 @@ const faqs = [
     { q: "কুপন কোড কোথায় পাবো?", a: "আমাদের Facebook পেজ ও WhatsApp গ্রুপে নিয়মিত কুপন কোড শেয়ার করা হয়।" }
 ];
 
-// ── PHP থেকে product ID (URL ?product=ID) ──────────
-const PHP_PRODUCT_ID = "<?= addslashes($productId) ?>";
+// ══════════════════════════════════════════════════
+//  config.txt থেকে Firebase config লোড করো
+// ══════════════════════════════════════════════════
+async function loadConfig() {
+    try {
+        const res  = await fetch('config.txt');
+        const cfg  = await res.json();
 
-// Product modal race-condition fix: flag + central opener
-let productModalOpened = false;
+        // Site settings
+        if (cfg.site) {
+            DELIVERY_CHARGE  = cfg.site.delivery_charge  || 80;
+            ITEMS_PER_PAGE   = cfg.site.items_per_page   || 12;
+            DEFAULT_WHATSAPP = cfg.site.default_whatsapp || '01XXXXXXXXX';
+            displayLimit     = ITEMS_PER_PAGE;
+        }
 
-function hideProductSkeleton() {
-    const sk = document.getElementById('productLoadingSkeleton');
-    if (sk) sk.style.display = 'none';
+        // Update delivery charge display in cart
+        document.getElementById('deliveryCharge').textContent = 'Tk ' + DELIVERY_CHARGE;
+
+        // WhatsApp float button
+        document.getElementById('floatWA').href =
+            `https://wa.me/88${DEFAULT_WHATSAPP}?text=Assalamu Alaikum`;
+
+        // Firebase init
+        firebase.initializeApp(cfg.firebase);
+        db = firebase.database();
+
+        initApp();
+    } catch (err) {
+        console.error('config.txt লোড হয়নি:', err);
+        alert('config.txt পাওয়া যায়নি। Firebase config সেট করুন।');
+    }
 }
 
-// যে-callback-ই আগে fire করুক — modal একবারই খুলবে
-function tryOpenProductModal() {
-    if (productModalOpened || !PHP_PRODUCT_ID) return;
-    const p = products.find(x => x.id === PHP_PRODUCT_ID);
-    if (!p) return;
-    productModalOpened = true;
-    hideProductSkeleton();
-    openModal(PHP_PRODUCT_ID);
-}
+// ══════════════════════════════════════════════════
+//  App init (Firebase ready হওয়ার পরে)
+// ══════════════════════════════════════════════════
+function initApp() {
+    // Visitor Tracking
+    (function trackVisit() {
+        const today   = new Date();
+        const dateKey = today.toISOString().slice(0, 10);
+        const hourKey = today.getHours();
+        const stKey   = 'ilm_visited_' + dateKey;
+        if (localStorage.getItem(stKey)) return;
+        Object.keys(localStorage).forEach(k => {
+            if (k.startsWith('ilm_visited_') && k !== stKey) localStorage.removeItem(k);
+        });
+        localStorage.setItem(stKey, '1');
+        db.ref('visits/' + dateKey).transaction(data => {
+            if (!data) return { count: 1, hours: { [hourKey]: 1 } };
+            data.count = (data.count || 0) + 1;
+            if (!data.hours) data.hours = {};
+            data.hours[hourKey] = (data.hours[hourKey] || 0) + 1;
+            return data;
+        });
+    })();
 
-window.addEventListener('DOMContentLoaded', () => {
     initFAQ();
     updateCartUI();
     updateWishUI();
 
-    // Page সাথে সাথে দেখাও
     if (PHP_PRODUCT_ID) {
         showPage('shop', false);
     } else {
@@ -899,8 +902,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const d = snap.val();
         if (d) {
             storeSettings = d;
-            document.getElementById('contactPhone').textContent = d.whatsapp || "N/A";
-            const waNum = d.whatsapp || "<?= DEFAULT_WHATSAPP ?>";
+            document.getElementById('contactPhone').textContent = d.whatsapp || 'N/A';
+            const waNum = d.whatsapp || DEFAULT_WHATSAPP;
             document.getElementById('floatWA').href      = `https://wa.me/88${waNum}?text=Assalamu Alaikum`;
             document.getElementById('waContactBtn').href = `https://wa.me/88${waNum}?text=Assalamu Alaikum, আমার একটি প্রশ্ন আছে।`;
             if (d.announcement && d.announcementActive) {
@@ -909,29 +912,23 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
     db.ref('coupons').on('value', snap => { coupons = snap.val() || {}; });
 
-    // ── PRODUCT DEEP-LINK FIX ─────────────────────────
-    // দুইটা listener — যে আগে data আনবে সেটাই modal খুলবে।
-    // productModalOpened flag দিয়ে double-open ঠেকানো হয়েছে।
     if (PHP_PRODUCT_ID) {
-        // Fast path: শুধু ওই একটা product fetch করো
         db.ref('products/' + PHP_PRODUCT_ID).once('value', snap => {
             const pData = snap.val();
             if (pData) {
-                // products array-তে না থাকলে add করো
                 if (!products.find(x => x.id === PHP_PRODUCT_ID)) {
                     products = [{ id: PHP_PRODUCT_ID, ...pData }, ...products];
                 }
                 tryOpenProductModal();
             } else {
-                // product পাওয়া যায়নি — skeleton hide করো
                 hideProductSkeleton();
             }
         });
     }
 
-    // সব products background-এ load করো (realtime)
     db.ref('products').on('value', snap => {
         const data   = snap.val();
         products     = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
@@ -941,7 +938,6 @@ window.addEventListener('DOMContentLoaded', () => {
         renderHomeFeatured();
 
         if (PHP_PRODUCT_ID) {
-            // Fallback: .once না চললে এখান থেকে modal খোলো
             tryOpenProductModal();
         } else {
             const h = window.location.hash;
@@ -954,11 +950,10 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', () => {
         document.getElementById('backTop').classList.toggle('visible', window.scrollY > 400);
     });
-});
+}
 
+// ── ROUTER ────────────────────────────────────────
 window.addEventListener('hashchange', router);
-
-// ── ROUTER (hashchange only — initial load আলাদাভাবে handle হয়) ──
 function router() {
     const hash = window.location.hash || '#home';
     if (hash.startsWith('#product-')) {
@@ -986,177 +981,69 @@ function showPage(name, animate, callback) {
         updatePageSEO(name);
         if (callback) callback();
     };
-
     if (animate) {
         document.getElementById('pageLoader').classList.add('active');
-        setTimeout(() => {
-            _doShow();
-            document.getElementById('pageLoader').classList.remove('active');
-        }, 300);
+        setTimeout(() => { _doShow(); document.getElementById('pageLoader').classList.remove('active'); }, 300);
     } else {
-        // animate=false হলে সরাসরি চালাও — কোনো setTimeout নেই
         _doShow();
     }
 }
 
-// ── SEO: প্রতিটা page-এর জন্য আলাদা SEO ──────────
+// ── SEO ───────────────────────────────────────────
 function updatePageSEO(pageName) {
-    const baseUrl  = location.href.split('#')[0];
-    const pageUrl  = baseUrl + '#' + pageName;
+    const baseUrl = location.href.split('#')[0];
+    const pageUrl = baseUrl + '#' + pageName;
 
     const pageMeta = {
         home: {
             title: 'IlmLibrary | বাংলাদেশের সেরা ইসলামিক বই অনলাইন শপ — কুরআন, হাদিস, দোয়া',
             desc:  'IlmLibrary — বাংলাদেশের সবচেয়ে বিশ্বস্ত ইসলামিক বই অনলাইন শপ। কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী, ফিকহ — ক্যাশ অন ডেলিভারিতে সারাদেশে পাঠানো হয়। অর্ডার করুন আজই!',
             keywords: 'ইসলামিক বই অনলাইন বাংলাদেশ, কুরআন তাফসীর বই, সহীহ হাদিস বই, দোয়া মাসনুনা বই, বাংলা ইসলামিক বই কিনুন, IlmLibrary, ইসলামিক বই ঢাকা, ক্যাশ অন ডেলিভারি ইসলামিক বই, অনলাইন ইসলামিক লাইব্রেরি',
-            schema: {
-                "@context": "https://schema.org",
-                "@type": "WebPage",
-                "name": "IlmLibrary — হোম",
-                "url": pageUrl,
-                "description": "বাংলাদেশের সবচেয়ে বিশ্বস্ত ইসলামিক বই অনলাইন শপ — কুরআন তাফসীর, সহীহ হাদিস, দোয়া মাসনুনা, সিরাতুন নবী",
-                "inLanguage": "bn",
-                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl },
-                "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
-                    { "@type": "ListItem", "position": 1, "name": "হোম", "item": pageUrl }
-                ]}
-            }
+            schema: { "@context":"https://schema.org","@type":"WebPage","name":"IlmLibrary — হোম","url":pageUrl,"description":"বাংলাদেশের সবচেয়ে বিশ্বস্ত ইসলামিক বই অনলাইন শপ","inLanguage":"bn","isPartOf":{"@type":"WebSite","name":"IlmLibrary","url":baseUrl},"breadcrumb":{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"হোম","item":pageUrl}]} }
         },
         shop: {
             title: 'ইসলামিক বই কিনুন অনলাইনে | IlmLibrary — কুরআন, হাদিস, দোয়া, সিরাহ',
             desc:  'বাংলাদেশের সেরা ইসলামিক বই কালেকশন। কুরআন তাফসীর, সহীহ বুখারী-মুসলিম, রিয়াদুস সালেহীন, সিরাতুন নবী, ফিকহুস সুন্নাহ — সেরা মূল্যে অর্ডার করুন। সারাদেশে ক্যাশ অন ডেলিভারি।',
-            keywords: 'ইসলামিক বই কিনুন, কুরআন তাফসীর বই বাংলাদেশ, সহীহ বুখারী বাংলা, হাদিস বই অনলাইন, সিরাতুন নবী বই, ফিকহ বই বাংলা, ইসলামিক বই অর্ডার, দোয়া বই অনলাইন, ইসলামিক সাহিত্য বাংলাদেশ, বেস্ট ইসলামিক বুকশপ বাংলাদেশ',
-            schema: {
-                "@context": "https://schema.org",
-                "@type": "CollectionPage",
-                "name": "বই স্টোর — IlmLibrary",
-                "url": pageUrl,
-                "description": "সকল ইসলামিক বইয়ের সম্পূর্ণ সংগ্রহ",
-                "inLanguage": "bn",
-                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl },
-                "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
-                    { "@type": "ListItem", "position": 1, "name": "হোম", "item": baseUrl + '#home' },
-                    { "@type": "ListItem", "position": 2, "name": "বই স্টোর", "item": pageUrl }
-                ]},
-                "mainEntity": {
-                    "@type": "ItemList",
-                    "name": "ইসলামিক বই সংগ্রহ",
-                    "numberOfItems": products.length,
-                    "itemListElement": products.slice(0, 20).map((p, i) => ({
-                        "@type": "ListItem",
-                        "position": i + 1,
-                        "name": p.title,
-                        "url": baseUrl + '#product-' + p.id,
-                        "image": getMainImg(p),
-                        "item": {
-                            "@type": "Book",
-                            "name": p.title,
-                            "image": getMainImg(p),
-                            "description": p.description || p.title,
-                            "inLanguage": "bn",
-                            "genre": p.category || "Islamic",
-                            "offers": {
-                                "@type": "Offer",
-                                "price": p.price,
-                                "priceCurrency": "BDT",
-                                "availability": p.inStock !== false ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
-                            }
-                        }
-                    }))
-                }
-            }
+            keywords: 'ইসলামিক বই কিনুন, কুরআন তাফসীর বই বাংলাদেশ, সহীহ বুখারী বাংলা, হাদিস বই অনলাইন, সিরাতুন নবী বই, ফিকহ বই বাংলা, ইসলামিক বই অর্ডার, দোয়া বই অনলাইন',
+            schema: { "@context":"https://schema.org","@type":"CollectionPage","name":"বই স্টোর — IlmLibrary","url":pageUrl,"description":"সকল ইসলামিক বইয়ের সম্পূর্ণ সংগ্রহ","inLanguage":"bn","isPartOf":{"@type":"WebSite","name":"IlmLibrary","url":baseUrl} }
         },
         about: {
             title: 'আমাদের সম্পর্কে | IlmLibrary — বাংলাদেশের বিশ্বস্ত ইসলামিক বুকশপ',
-            desc:  'IlmLibrary — বাংলাদেশের মুসলিম পাঠকদের জন্য তৈরি বিশ্বস্ত ইসলামিক বই প্রতিষ্ঠান। আমাদের লক্ষ্য সহীহ ও মানসম্পন্ন ইসলামিক বই সবার কাছে সহজলভ্য করা। ২০১৫ সাল থেকে সেবা দিয়ে আসছি।',
-            keywords: 'IlmLibrary সম্পর্কে, ইসলামিক বুকশপ বাংলাদেশ, বিশ্বস্ত ইসলামিক বই প্রতিষ্ঠান, বাংলাদেশ ইসলামিক লাইব্রেরি, অনলাইন ইসলামিক বই শপ',
-            schema: {
-                "@context": "https://schema.org",
-                "@type": "AboutPage",
-                "name": "আমাদের সম্পর্কে — IlmLibrary",
-                "url": pageUrl,
-                "description": "IlmLibrary-র পরিচয়, লক্ষ্য ও উদ্দেশ্য",
-                "inLanguage": "bn",
-                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl },
-                "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
-                    { "@type": "ListItem", "position": 1, "name": "হোম", "item": baseUrl + '#home' },
-                    { "@type": "ListItem", "position": 2, "name": "আমাদের সম্পর্কে", "item": pageUrl }
-                ]},
-                "mainEntity": {
-                    "@type": "Organization",
-                    "name": "IlmLibrary",
-                    "description": "বাংলাদেশের বিশ্বস্ত ইসলামিক বই লাইব্রেরি",
-                    "inLanguage": "bn"
-                },
-                "speakable": { "@type": "SpeakableSpecification", "cssSelector": [".about-hero h1", ".about-hero p"] }
-            }
+            desc:  'IlmLibrary — বাংলাদেশের মুসলিম পাঠকদের জন্য তৈরি বিশ্বস্ত ইসলামিক বই প্রতিষ্ঠান। ২০১৫ সাল থেকে সেবা দিয়ে আসছি।',
+            keywords: 'IlmLibrary সম্পর্কে, ইসলামিক বুকশপ বাংলাদেশ, বিশ্বস্ত ইসলামিক বই প্রতিষ্ঠান',
+            schema: { "@context":"https://schema.org","@type":"AboutPage","name":"আমাদের সম্পর্কে — IlmLibrary","url":pageUrl,"inLanguage":"bn","isPartOf":{"@type":"WebSite","name":"IlmLibrary","url":baseUrl} }
         },
         contact: {
             title: 'যোগাযোগ করুন | IlmLibrary — ইসলামিক বই অর্ডার ও কাস্টমার সাপোর্ট',
-            desc:  'IlmLibrary-তে ইসলামিক বই অর্ডার করতে বা যেকোনো প্রশ্নের জন্য আমাদের সাথে যোগাযোগ করুন। WhatsApp, ফোন বা ফর্মের মাধ্যমে অর্ডার দিন। সারাদেশে ক্যাশ অন ডেলিভারি।',
-            keywords: 'IlmLibrary যোগাযোগ, ইসলামিক বই অর্ডার করুন, ইসলামিক বুকশপ WhatsApp, বই অর্ডার বাংলাদেশ, ক্যাশ অন ডেলিভারি ইসলামিক বই, কাস্টমার সাপোর্ট বই শপ',
-            schema: {
-                "@context": "https://schema.org",
-                "@type": "ContactPage",
-                "name": "যোগাযোগ — IlmLibrary",
-                "url": pageUrl,
-                "description": "IlmLibrary-র সাথে যোগাযোগ করুন",
-                "inLanguage": "bn",
-                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl },
-                "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [
-                    { "@type": "ListItem", "position": 1, "name": "হোম", "item": baseUrl + '#home' },
-                    { "@type": "ListItem", "position": 2, "name": "যোগাযোগ", "item": pageUrl }
-                ]},
-                "mainEntity": {
-                    "@type": "Organization",
-                    "name": "IlmLibrary",
-                    "contactPoint": {
-                        "@type": "ContactPoint",
-                        "contactType": "customer service",
-                        "availableLanguage": "Bengali",
-                        "contactOption": "TollFree"
-                    }
-                }
-            }
+            desc:  'IlmLibrary-তে ইসলামিক বই অর্ডার করতে বা যেকোনো প্রশ্নের জন্য আমাদের সাথে যোগাযোগ করুন। WhatsApp, ফোন বা ফর্মের মাধ্যমে অর্ডার দিন।',
+            keywords: 'IlmLibrary যোগাযোগ, ইসলামিক বই অর্ডার করুন, ইসলামিক বুকশপ WhatsApp',
+            schema: { "@context":"https://schema.org","@type":"ContactPage","name":"যোগাযোগ — IlmLibrary","url":pageUrl,"inLanguage":"bn","isPartOf":{"@type":"WebSite","name":"IlmLibrary","url":baseUrl} }
         },
         wishlist: {
             title: 'উইশলিস্ট | IlmLibrary',
             desc:  'আপনার পছন্দের ইসলামিক বইয়ের তালিকা।',
             keywords: 'উইশলিস্ট, পছন্দের বই, IlmLibrary',
-            schema: {
-                "@context": "https://schema.org",
-                "@type": "WebPage",
-                "name": "উইশলিস্ট — IlmLibrary",
-                "url": pageUrl,
-                "noIndex": true,
-                "isPartOf": { "@type": "WebSite", "name": "IlmLibrary", "url": baseUrl }
-            }
+            schema: { "@context":"https://schema.org","@type":"WebPage","name":"উইশলিস্ট — IlmLibrary","url":pageUrl,"isPartOf":{"@type":"WebSite","name":"IlmLibrary","url":baseUrl} }
         }
     };
 
     const meta = pageMeta[pageName] || pageMeta['home'];
-
-    // Title আপডেট
     document.title = meta.title;
 
-    // Meta tags আপডেট
     const setMeta = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
-    setMeta('meta[name="description"]',      'content', meta.desc);
-    setMeta('meta[name="keywords"]',         'content', meta.keywords);
-    setMeta('meta[property="og:title"]',     'content', meta.title);
+    setMeta('meta[name="description"]',       'content', meta.desc);
+    setMeta('meta[name="keywords"]',          'content', meta.keywords);
+    setMeta('meta[property="og:title"]',      'content', meta.title);
     setMeta('meta[property="og:description"]','content', meta.desc);
-    setMeta('meta[property="og:url"]',       'content', pageUrl);
-    setMeta('meta[name="twitter:title"]',    'content', meta.title);
+    setMeta('meta[property="og:url"]',        'content', pageUrl);
+    setMeta('meta[name="twitter:title"]',     'content', meta.title);
     setMeta('meta[name="twitter:description"]','content', meta.desc);
 
-    // Canonical URL আপডেট
     const canonical = document.getElementById('canonicalTag');
     if (canonical) canonical.setAttribute('href', pageUrl);
 
-    // robots: wishlist page index করবে না
     setMeta('meta[name="robots"]', 'content', pageName === 'wishlist' ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
 
-    // JSON-LD Schema আপডেট
     const oldSchema = document.getElementById('page-schema-ld');
     if (oldSchema) oldSchema.remove();
     const schemaScript = document.createElement('script');
@@ -1165,22 +1052,13 @@ function updatePageSEO(pageName) {
     schemaScript.textContent = JSON.stringify(meta.schema);
     document.head.appendChild(schemaScript);
 
-    // Home page-এ FAQ Schema যোগ করা
     const oldFaqSchema = document.getElementById('faq-schema-ld');
     if (oldFaqSchema) oldFaqSchema.remove();
     if (pageName === 'home' || pageName === 'about') {
         const faqScript = document.createElement('script');
         faqScript.type = 'application/ld+json';
         faqScript.id   = 'faq-schema-ld';
-        faqScript.textContent = JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            "mainEntity": faqs.map(f => ({
-                "@type": "Question",
-                "name": f.q,
-                "acceptedAnswer": { "@type": "Answer", "text": f.a }
-            }))
-        });
+        faqScript.textContent = JSON.stringify({ "@context":"https://schema.org","@type":"FAQPage","mainEntity": faqs.map(f => ({"@type":"Question","name":f.q,"acceptedAnswer":{"@type":"Answer","text":f.a}})) });
         document.head.appendChild(faqScript);
     }
 }
@@ -1258,18 +1136,14 @@ function buildCard(p) {
     const inStock  = p.inStock !== false;
     const badge    = p.badge || (disc >= 10 ? 'sale' : '');
 
-    // Schema.org structured data for Google image indexing
     const schemaScript = document.createElement('script');
     schemaScript.type = 'application/ld+json';
     schemaScript.textContent = JSON.stringify({
-        "@context": "https://schema.org", "@type": "Book",
-        "name": p.title, "image": mainImg,
-        "description": p.description || p.title,
-        "genre": p.category || "Islamic", "inLanguage": "bn",
-        "offers": { "@type": "Offer", "price": p.price, "priceCurrency": "BDT",
-            "availability": p.inStock !== false ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
-        },
-        "aggregateRating": { "@type": "AggregateRating", "ratingValue": p.rating || 5, "bestRating": 5, "reviewCount": 1 }
+        "@context":"https://schema.org","@type":"Book",
+        "name":p.title,"image":mainImg,"description":p.description||p.title,
+        "genre":p.category||"Islamic","inLanguage":"bn",
+        "offers":{"@type":"Offer","price":p.price,"priceCurrency":"BDT","availability":p.inStock!==false?"https://schema.org/InStock":"https://schema.org/OutOfStock"},
+        "aggregateRating":{"@type":"AggregateRating","ratingValue":p.rating||5,"bestRating":5,"reviewCount":1}
     });
 
     const card = document.createElement('div');
@@ -1301,6 +1175,10 @@ function buildCard(p) {
             <button class="btn-add${!inStock ? ' disabled' : ''}" onclick="${inStock ? `addToCart('${p.id}')` : ''}" ${!inStock ? 'disabled' : ''}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
                 ${inStock ? 'Add to Cart' : 'স্টক নেই'}
+            </button>
+            <button class="btn-wa" onclick="directWA('${p.title.replace(/'/g, "\\'")}')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="15" height="15"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                WhatsApp
             </button>
         </div>`;
     return card;
@@ -1477,7 +1355,7 @@ function removeCoupon() {
 
 function checkoutWA() {
     if (!cart.length) return showToast("Cart খালি!");
-    const num = storeSettings.whatsapp || "<?= DEFAULT_WHATSAPP ?>";
+    const num = storeSettings.whatsapp || DEFAULT_WHATSAPP;
     const sub = cart.reduce((a, i) => a + i.price * i.qty, 0);
     let discount = 0;
     let msg = "Assalamu Alaikum, IlmLibrary থেকে অর্ডার:%0A%0A";
@@ -1492,6 +1370,20 @@ function checkoutWA() {
 }
 
 // ── MODAL ─────────────────────────────────────────
+function hideProductSkeleton() {
+    const sk = document.getElementById('productLoadingSkeleton');
+    if (sk) sk.classList.remove('show');
+}
+
+function tryOpenProductModal() {
+    if (productModalOpened || !PHP_PRODUCT_ID) return;
+    const p = products.find(x => x.id === PHP_PRODUCT_ID);
+    if (!p) return;
+    productModalOpened = true;
+    hideProductSkeleton();
+    openModal(PHP_PRODUCT_ID);
+}
+
 function openModal(id) {
     const p = products.find(x => x.id === id);
     if (!p) return;
@@ -1553,64 +1445,42 @@ function openModal(id) {
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 
-    // ── Google SEO: Dynamic Product Schema (JSON-LD) ──
+    // Dynamic Product Schema
     const existingSchema = document.getElementById('product-schema-ld');
     if (existingSchema) existingSchema.remove();
 
-    const productUrl = location.href.split('#')[0] + '#product-' + p.id;
+    const productUrl  = location.href.split('#')[0] + '?product=' + p.id;
     const productImage = images[0] || '';
     const availability = inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
-    const avgRating = (p.rating || 5).toFixed(1);
+    const avgRating    = (p.rating || 5).toFixed(1);
+    const reviews2     = p.reviews ? Object.values(p.reviews) : [];
 
     const schema = {
-        "@context": "https://schema.org/",
-        "@type": "Product",
-        "name": p.title,
-        "description": p.description || p.title,
-        "image": productImage,
-        "url": productUrl,
-        "sku": p.id,
-        "brand": { "@type": "Brand", "name": p.author || "IlmLibrary" },
-        "category": p.category || "Islamic Books",
-        "offers": {
-            "@type": "Offer",
-            "url": productUrl,
-            "priceCurrency": "BDT",
-            "price": p.price,
-            "priceValidUntil": new Date(Date.now() + 30*24*60*60*1000).toISOString().slice(0,10),
-            "availability": availability,
-            "itemCondition": "https://schema.org/NewCondition",
-            "seller": { "@type": "Organization", "name": "IlmLibrary" }
-        }
+        "@context":"https://schema.org/","@type":"Product",
+        "name":p.title,"description":p.description||p.title,"image":productImage,"url":productUrl,
+        "sku":p.id,"brand":{"@type":"Brand","name":p.author||"IlmLibrary"},
+        "category":p.category||"Islamic Books",
+        "offers":{"@type":"Offer","url":productUrl,"priceCurrency":"BDT","price":p.price,
+            "priceValidUntil":new Date(Date.now()+30*24*60*60*1000).toISOString().slice(0,10),
+            "availability":availability,"itemCondition":"https://schema.org/NewCondition",
+            "seller":{"@type":"Organization","name":"IlmLibrary"}}
     };
-    if (reviews.length > 0) {
-        schema["aggregateRating"] = {
-            "@type": "AggregateRating",
-            "ratingValue": avgRating,
-            "reviewCount": reviews.length,
-            "bestRating": "5",
-            "worstRating": "1"
-        };
-        schema["review"] = reviews.slice(0,5).map(r => ({
-            "@type": "Review",
-            "reviewRating": { "@type": "Rating", "ratingValue": r.rating || 5, "bestRating": "5" },
-            "author": { "@type": "Person", "name": r.name || "পাঠক" },
-            "reviewBody": r.text || ""
-        }));
+    if (reviews2.length > 0) {
+        schema["aggregateRating"] = {"@type":"AggregateRating","ratingValue":avgRating,"reviewCount":reviews2.length,"bestRating":"5","worstRating":"1"};
+        schema["review"] = reviews2.slice(0,5).map(r => ({"@type":"Review","reviewRating":{"@type":"Rating","ratingValue":r.rating||5,"bestRating":"5"},"author":{"@type":"Person","name":r.name||"পাঠক"},"reviewBody":r.text||""}));
     }
-
     const schemaScript = document.createElement('script');
     schemaScript.type = 'application/ld+json';
-    schemaScript.id = 'product-schema-ld';
+    schemaScript.id   = 'product-schema-ld';
     schemaScript.textContent = JSON.stringify(schema);
     document.head.appendChild(schemaScript);
 
-    // ── Dynamic meta tags (Open Graph + title) ──
+    // Dynamic meta update
     document.title = p.title + ' | IlmLibrary';
     const setMeta = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
-    setMeta('meta[name="description"]', 'content', p.description || p.title);
-    setMeta('meta[property="og:title"]', 'content', p.title + ' | IlmLibrary');
-    setMeta('meta[property="og:description"]', 'content', p.description || p.title);
+    setMeta('meta[name="description"]',       'content', p.description || p.title);
+    setMeta('meta[property="og:title"]',      'content', p.title + ' | IlmLibrary');
+    setMeta('meta[property="og:description"]','content', p.description || p.title);
     const ogImg2 = document.querySelector('meta[property="og:image"]');
     if (ogImg2) ogImg2.setAttribute('content', productImage);
     else if (productImage) { const m = document.createElement('meta'); m.setAttribute('property','og:image'); m.setAttribute('content',productImage); document.head.appendChild(m); }
@@ -1654,14 +1524,14 @@ function shareToWA(title, id) {
     window.open(`https://wa.me/?text=${encodeURIComponent('দেখুন এই বইটি: ' + title + ' - ')}${url}`, '_blank');
 }
 function directWA(title) {
-    const num = storeSettings.whatsapp || "<?= DEFAULT_WHATSAPP ?>";
+    const num = storeSettings.whatsapp || DEFAULT_WHATSAPP;
     window.open(`https://wa.me/88${num}?text=${encodeURIComponent('Assalamu Alaikum, আমি এই বইটি অর্ডার করতে চাই: ' + title)}`, '_blank');
 }
 
 // ── NEWSLETTER & CONTACT ──────────────────────────
 function subscribeNewsletter() {
     const em = document.getElementById('nlEmail').value;
-    if (!em) return;
+    if (!em || !db) return;
     db.ref('subscribers').push({ email: em, date: new Date().toISOString() });
     document.getElementById('nlEmail').value = '';
     showToast("সফলভাবে সাবস্ক্রাইব হয়েছে!");
@@ -1679,6 +1549,11 @@ function showToast(msg) {
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
 }
+
+// ══════════════════════════════════════════════════
+//  START — config.txt লোড করে সব শুরু হবে
+// ══════════════════════════════════════════════════
+loadConfig();
 </script>
 </body>
 </html>
